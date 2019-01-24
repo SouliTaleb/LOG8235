@@ -21,11 +21,12 @@ public:
     virtual void Tick(float deltaTime) override;
 
 protected:
-	virtual void Move(float acceleration, float vitesse);
+	virtual void Move(float acceleration, float maxSpeed, float deltaTime);
 
 	FVector2D m_MovementInput;
 	FVector2D m_StartingPosition;
 	float m_capsuleRadius;
+	float m_currentSpeed = 0.0f;
 	float const m_maxSpeed = 500.0f;
 	float const m_maxAcceleration = 500.0f;
 	float const m_visionAngle = PI / 3.0f;

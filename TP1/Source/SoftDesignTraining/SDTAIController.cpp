@@ -23,12 +23,13 @@ void ASDTAIController::BeginPlay()
 
 void ASDTAIController::Tick(float deltaTime)
 {
-	Move(m_maxAcceleration, m_maxSpeed);
+	Move(m_maxAcceleration, m_maxSpeed, deltaTime);
 }
 
-void ASDTAIController::Move(float acceleration, float vitesse) 
+void ASDTAIController::Move(float acceleration, float maxSpeed, float deltaTime)
 {
 	APawn* pawn = GetPawn();
-	FVector direction = pawn->GetActorForwardVector();
-	pawn->AddMovementInput(direction, vitesse);
+	FVector const ForwardDirection = pawn->GetActorForwardVector().GetSafeNormal();
+	m_currentSpeed = FMath::Min(maxSpeed, m_currentSpeed + acceleration * deltaTime);
+	pawn->AddMovementInput(ForwardDirection, m_currentSpeed);
 }

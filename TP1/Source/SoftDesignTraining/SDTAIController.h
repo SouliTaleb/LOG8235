@@ -15,8 +15,13 @@ class SOFTDESIGNTRAINING_API ASDTAIController : public AAIController
 {
     GENERATED_BODY()
 public:
+	ASDTAIController();
+
+	virtual void BeginPlay() override;
     virtual void Tick(float deltaTime) override;
-	virtual void Move(float acceleration, float vitesse) /* override */;
+
+protected:
+	virtual void Move(float acceleration, float vitesse);
 
 	FVector2D m_MovementInput;
 	FVector2D m_StartingPosition;

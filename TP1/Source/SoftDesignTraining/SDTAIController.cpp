@@ -2,6 +2,7 @@
 
 #include "SoftDesignTraining.h"
 #include "SDTAIController.h"
+#include <cmath>
 
 ASDTAIController::ASDTAIController()
 {
@@ -32,4 +33,6 @@ void ASDTAIController::Move(float acceleration, float maxSpeed, float deltaTime)
 	FVector const ForwardDirection = pawn->GetActorForwardVector().GetSafeNormal();
 	m_currentSpeed = FMath::Min(maxSpeed, m_currentSpeed + acceleration * deltaTime);
 	pawn->AddMovementInput(ForwardDirection, m_currentSpeed);
+	FRotator deltaRotation = FVector(FVector2D(ForwardDirection).GetSafeNormal(), 0.f).ToOrientationRotator();
+	pawn->AddActorWorldRotation(deltaRotation);
 }

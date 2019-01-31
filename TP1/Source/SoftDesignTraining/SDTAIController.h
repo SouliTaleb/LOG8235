@@ -24,10 +24,20 @@ protected:
 	{
 		MoveForward,
 		AvoidObstacle,
+		MoveAndRotate,
+		FollowPlayer,
 		Stop
 	};
 
-	struct ObstacleInformation
+	enum class ObstacleType
+	{
+		Wall,
+		Slab,
+		Player,
+		None
+	};
+
+	struct HitObject
 	{
 		void ObstacleDetected(FVector2D obstacleNormal)
 		{
@@ -47,22 +57,41 @@ protected:
 
 		bool m_obstacleAvoided = true;
 		FVector2D m_obstacleNormal;
+		struct FHitResult m_hitInformation;
 	};
 
 	void Move(const FVector2D& direction, float acceleration, float maxSpeed, float deltaTime);
 
 private:
-	bool RayCast(struct FHitResult& outHit);
-	bool AvoidObstacle(const struct FHitResult&  outHit, const float deltaTime);
+	bool RayCast(const FVector direction);
+	bool AvoidObstacle(const float deltaTime);
+	bool ISObstacleDetected();
+	bool ISCloseToObstacle(const FVector direction, const float allowedDistance, const ObstacleType obstacleType);
+	ObstacleType GetObstacleType() const;
+	bool SphereOverlap(const FVector& pos, float radius, TArray<struct FOverlapResult>& outOverlaps, bool drawdebug);
+	bool CanFollowPlayer(const FVector direction);
+	void DebugDrawPrimitive(const UPrimitiveComponent& primitive);
+	TArray<FOverlapResult> CollectTargetActorsInFrontOfCharacter(APawn const* pawn);
+	void SetVisibilityInformation(bool isVisible);
+	bool DetectPlayer(float deltaTime);
 
 private:
+
+	// Visible, shootable
+	UPROPERTY(EditAnywhere)
+	class UMaterial* VisibleMaterial;
+
+	// not visible, not shootable
+	UPROPERTY(EditAnywhere)
+	class UMaterial* NonVisibleMaterial;
+
 	FVector2D m_MovementInput;
 	FVector2D m_StartingPosition;
 	float m_capsuleRadius;
 	float m_currentSpeed = 0.0f;
-	float const m_maxSpeed = 500.0f;
+	float const m_maxSpeed = 0.4f;
 	float const m_maxAcceleration = 500.0f;
 	State m_state = State::MoveForward;
-	ObstacleInformation m_obstacleInformation;
+	HitObject m_hitObject;
 	float const m_visionAngle = PI / 3.0f;
 };

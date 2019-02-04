@@ -29,44 +29,49 @@ void ASDTAIController::BeginPlay()
 
 void ASDTAIController::Tick(float deltaTime)
 {
-	DetectPlayer(deltaTime);
-		//m_state = State::FollowPlayer;
-	/*
-	FVector const actorForwardDirection = GetPawn()->GetActorForwardVector();
-	struct FHitResult hitResult;
-	switch (m_state)
-	{
-		case State::MoveForward:
-		{
-			Move(FVector2D(actorForwardDirection), m_maxAcceleration, m_maxSpeed, deltaTime);			
-			if (ISObstacleDetected())
-				m_state = State::AvoidObstacle;
-		}
-		break;
-		case State::AvoidObstacle:
-		{
-			m_obstacleInformation.ObstacleDetected(FVector2D(m_hitObject.m_hitInformation.ImpactNormal));
-			AvoidObstacle(deltaTime);
-			m_state = State::MoveForward;
-		}
-		break;
-		case State::FollowPlayer:
-		{
-			if(!DetectPlayer(deltaTime))
-				m_state = State::MoveForward;
-		}
-		break;
-		default: break;
-	};*/
+	TArray<AActor*> visibleActors = GetVisibleActors();
+	
+	//DetectPlayer(deltaTime);
+	//m_state = State::MoveForward;
+	//
+	//FVector const actorForwardDirection = GetPawn()->GetActorForwardVector();
+	//struct FHitResult hitResult;
+	//switch (m_state)
+	//{
+	//	case State::MoveForward:
+	//	{
+	//		Move(FVector2D(actorForwardDirection), m_maxAcceleration, m_maxSpeed, deltaTime);			
+	//		if (ISObstacleDetected())
+	//			m_state = State::AvoidObstacle;
+	//		break;
+	//	}
+	//	case State::AvoidObstacle:
+	//	{
+	//		//m_obstacleInformation.ObstacleDetected(FVector2D(m_hitObject.m_hitInformation.ImpactNormal));
+	//		AvoidObstacle(deltaTime);
+	//		m_state = State::MoveForward;
+	//		break;
+	//	}
+	//	case State::FollowPlayer:
+	//	{
+	//		if(!DetectPlayer(deltaTime))
+	//			m_state = State::MoveForward;
+	//		break;
+	//	}
+	//	default: break;
+	//};
 }
 
 
 bool ASDTAIController::DetectPlayer(float deltaTime)
 {
-	TArray<FOverlapResult> foundActors = CollectTargetActorsInFrontOfCharacter(GetPawn());
-	for (FOverlapResult overlapResult : foundActors)
+	TArray<AActor*> foundActors = GetVisibleActors();
+	for (AActor * actor : foundActors)
 	{
-		ASoftDesignTrainingMainCharacter* targetActor = Cast<ASoftDesignTrainingMainCharacter>(overlapResult.GetActor());
+		FVector test = actor->GetActorLocation();
+		DrawDebugLine(GetWorld(), GetPawn()->GetActorLocation(), test, FColor::Blue);
+
+		ASoftDesignTrainingMainCharacter* targetActor = Cast<ASoftDesignTrainingMainCharacter>(actor);
 		if (targetActor != nullptr)
 		{
 				const FVector targetLocation = targetActor->GetActorLocation();
@@ -201,11 +206,52 @@ bool ASDTAIController::SphereOverlap(const FVector& pos, float radius, TArray<st
 	return outOverlaps.Num() > 0;
 }
 
-TArray<FOverlapResult> ASDTAIController::CollectTargetActorsInFrontOfCharacter(APawn const* pawn) 
+//TArray<FOverlapResult> ASDTAIController::CollectTargetActorsInFrontOfCharacter(APawn const* pawn) 
+//{
+//	TArray<FOverlapResult> outResults;
+//	SphereOverlap(pawn->GetActorLocation() + pawn->GetActorForwardVector() * 750.0f, 1000.0f, outResults, true);
+//	return outResults;
+//}
+
+TArray<AActor*> ASDTAIController::GetVisibleActors()
 {
-	TArray<FOverlapResult> outResults;
-	SphereOverlap(pawn->GetActorLocation() + pawn->GetActorForwardVector() * 750.0f, 1000.0f, outResults, true);
-	return outResults;
+	TArray<AActor*> result;
+
+	const APawn * pawn = GetPawn();
+	const UWorld * world = GetWorld();
+
+	TArray<FOverlapResult> overlapResults;
+	SphereOverlap(pawn->GetActorLocation() + pawn->GetActorForwardVector() * VisionRange / 2, VisionRange / 2, overlapResults, DrawDebug);
+
+	// Object types to query (collisions with other objects)
+	TArray<TEnumAsByte<EObjectTypeQuery>> objectQueryParams;
+	objectQueryParams.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic));
+
+	for (const FOverlapResult & overlapResult : overlapResults)
+	{
+		AActor * actor = overlapResult.GetActor();
+
+		// Query params
+		FCollisionQueryParams queryParams = FCollisionQueryParams();
+		queryParams.AddIgnoredActor(actor);
+
+		FHitResult hitResult;
+		
+		bool isHit = world->LineTraceSingleByObjectType(hitResult, pawn->GetActorLocation(), actor->GetActorLocation(), objectQueryParams, queryParams);
+
+		// Filter out those that are blocked by an obstacle
+		if (!isHit)
+		{
+			if (DrawDebug)
+			{
+				DrawDebugLine(world, pawn->GetActorLocation(), actor->GetActorLocation(), FColor::Red);
+			}
+
+			result.Add(actor);
+		}
+	}
+
+	return result;
 }
 
 void ASDTAIController::DebugDrawPrimitive(const UPrimitiveComponent& primitive)

@@ -125,7 +125,7 @@ bool ASDTAIController::AvoidObstacle(const float deltaTime)
 	float distanceToImpactPoint = (m_hitObject.m_hitInformation.ImpactPoint - GetPawn()->GetActorLocation()).Size();
 	if (distanceToImpactPoint <= m_hitObject.m_allowedDistanceToHit)
 	{
-		FVector2D const newActorDirection = FVector2D(FVector::CrossProduct(FVector::UpVector, GetPawn()->GetActorForwardVector()/*m_hitObject.m_obstacleNormal*/));
+		FVector2D const newActorDirection = FVector2D(FVector::CrossProduct(FVector::UpVector, m_hitObject.m_obstacleNormal));
 		Move(newActorDirection, m_maxAcceleration, m_maxSpeed, deltaTime);
 	}
 	return true;
@@ -137,7 +137,7 @@ ASDTAIController::ObstacleType ASDTAIController::GetObstacleType() const
 	FName nameComponent = m_hitObject.m_hitInformation.GetComponent()->GetFName();
 	if (nameActor.ToString().StartsWith("Wall") && nameComponent.ToString().StartsWith("StaticMeshComponent"))
 		return ObstacleType::Wall;
-	else if (nameActor.ToString().StartsWith("Slab") && nameComponent.ToString().StartsWith("StaticMeshComponent"))
+	else if (nameActor.ToString().StartsWith("BP_DeathFloor"))
 		return ObstacleType::Slab;
 	else if (nameActor.ToString().StartsWith("BP_SDTMainCharacter_C") && nameComponent.ToString().StartsWith("StaticMeshComponent"))
 		return ObstacleType::Player;
@@ -148,10 +148,10 @@ bool ASDTAIController::ISObstacleDetected()
 {
 	const FVector forwardVectorDirection = GetPawn()->GetActorForwardVector();
 	FVector floorDirection = forwardVectorDirection;
-	floorDirection.Z= -.25f;
-	floorDirection.GetSafeNormal();
-	return ISCloseToObstacle(floorDirection, 150.f, ObstacleType::Slab) ||
-		ISCloseToObstacle(forwardVectorDirection, 150.f, ObstacleType::Wall);
+	floorDirection.Z= -1.f;
+	floorDirection.Normalize();
+	return ISCloseToObstacle(floorDirection, 700.f, ObstacleType::Slab); // ||
+		//ISCloseToObstacle(forwardVectorDirection, 150.f, ObstacleType::Wall);
 }
 
 bool ASDTAIController::ISCloseToObstacle(const FVector direction, const float allowedDistance, const ObstacleType obstacleType)

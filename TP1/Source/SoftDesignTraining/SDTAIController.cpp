@@ -103,6 +103,10 @@ bool ASDTAIController::RayCast(const FVector direction)
 	FCollisionObjectQueryParams objectQueryParams;
 
 	FCollisionQueryParams queryParams = FCollisionQueryParams::DefaultQueryParam;
+	/*objectQueryParams.AddObjectTypesToQuery(ECC_PhysicsBody);
+	objectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
+	objectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);*/
+	objectQueryParams.AddObjectTypesToQuery(COLLISION_DEATH_OBJECT);
 	queryParams.AddIgnoredActor(GetPawn());
 	queryParams.bReturnPhysicalMaterial = true;
 
@@ -121,7 +125,7 @@ bool ASDTAIController::AvoidObstacle(const float deltaTime)
 	float distanceToImpactPoint = (m_hitObject.m_hitInformation.ImpactPoint - GetPawn()->GetActorLocation()).Size();
 	if (distanceToImpactPoint <= m_hitObject.m_allowedDistanceToHit)
 	{
-		FVector2D const newActorDirection = FVector2D(FVector::CrossProduct(FVector::UpVector, m_hitObject.m_obstacleNormal));
+		FVector2D const newActorDirection = FVector2D(FVector::CrossProduct(FVector::UpVector, GetPawn()->GetActorForwardVector()/*m_hitObject.m_obstacleNormal*/));
 		Move(newActorDirection, m_maxAcceleration, m_maxSpeed, deltaTime);
 	}
 	return true;
@@ -144,10 +148,10 @@ bool ASDTAIController::ISObstacleDetected()
 {
 	const FVector forwardVectorDirection = GetPawn()->GetActorForwardVector();
 	FVector floorDirection = forwardVectorDirection;
-	floorDirection.Z = -1.0f;
+	floorDirection.Z= -.25f;
 	floorDirection.GetSafeNormal();
-	return ISCloseToObstacle(floorDirection, 350.f, ObstacleType::Slab); //||
-		//ISCloseToObstacle(forwardVectorDirection, 150.f, ObstacleType::Wall);
+	return ISCloseToObstacle(floorDirection, 150.f, ObstacleType::Slab) ||
+		ISCloseToObstacle(forwardVectorDirection, 150.f, ObstacleType::Wall);
 }
 
 bool ASDTAIController::ISCloseToObstacle(const FVector direction, const float allowedDistance, const ObstacleType obstacleType)

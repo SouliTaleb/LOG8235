@@ -8,16 +8,16 @@
 #include "SDTAIController.generated.h"
 
 /**
- * 
+ *
  */
 UCLASS(ClassGroup = AI, config = Game)
 class SOFTDESIGNTRAINING_API ASDTAIController : public AAIController
 {
-    GENERATED_BODY()
+	GENERATED_BODY()
 public:
 	ASDTAIController();
 	virtual void BeginPlay() override;
-    virtual void Tick(float deltaTime) override;
+	virtual void Tick(float deltaTime) override;
 
 protected:
 	enum class State
@@ -39,7 +39,7 @@ protected:
 
 	struct HitObject
 	{
-		void ObstacleDetected(FVector2D obstacleNormal)
+		void ObstacleDetected(FVector obstacleNormal)
 		{
 			m_obstacleNormal = obstacleNormal;
 			m_obstacleAvoided = false;
@@ -56,9 +56,9 @@ protected:
 		}
 
 		bool m_obstacleAvoided = true;
-		FVector2D m_obstacleNormal;
+		FVector m_obstacleNormal;
 		struct FHitResult m_hitInformation;
-		TArray < struct FHitResult > m_OutHits;
+		float m_allowedDistanceToHit = 0.0f;
 	};
 
 	void Move(const FVector2D& direction, float acceleration, float maxSpeed, float deltaTime);
@@ -80,11 +80,11 @@ private:
 
 	// Visible, shootable
 	UPROPERTY(EditAnywhere)
-	class UMaterial* VisibleMaterial;
+		class UMaterial* VisibleMaterial;
 
 	// not visible, not shootable
 	UPROPERTY(EditAnywhere)
-	class UMaterial* NonVisibleMaterial;
+		class UMaterial* NonVisibleMaterial;
 
 	FVector2D m_MovementInput;
 	FVector2D m_StartingPosition;

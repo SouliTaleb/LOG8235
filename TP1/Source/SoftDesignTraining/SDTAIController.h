@@ -64,7 +64,7 @@ protected:
 	void Move(const FVector2D& direction, float acceleration, float maxSpeed, float deltaTime);
 
 private:
-	bool RayCast(const FVector direction);
+	bool RayCast(const FVector direction, bool isSlabObstacle = false);
 	bool AvoidObstacle(const float deltaTime);
 	bool ISObstacleDetected();
 	bool ISCloseToObstacle(const FVector direction, const float allowedDistance, const ObstacleType obstacleType);

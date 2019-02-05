@@ -31,7 +31,7 @@ void ASDTAIController::Tick(float deltaTime)
 {
 	DetectPlayer(deltaTime);
 		//m_state = State::FollowPlayer;
-	/*
+	
 	FVector const actorForwardDirection = GetPawn()->GetActorForwardVector();
 	struct FHitResult hitResult;
 	switch (m_state)
@@ -45,7 +45,7 @@ void ASDTAIController::Tick(float deltaTime)
 		break;
 		case State::AvoidObstacle:
 		{
-			m_obstacleInformation.ObstacleDetected(FVector2D(m_hitObject.m_hitInformation.ImpactNormal));
+			m_hitObject.ObstacleDetected(FVector2D(m_hitObject.m_hitInformation.ImpactNormal));
 			AvoidObstacle(deltaTime);
 			m_state = State::MoveForward;
 		}
@@ -57,7 +57,7 @@ void ASDTAIController::Tick(float deltaTime)
 		}
 		break;
 		default: break;
-	};*/
+	};
 }
 
 
@@ -102,38 +102,9 @@ bool ASDTAIController::RayCast(const FVector direction)
 
 	//Single line trace
 	FCollisionObjectQueryParams objectQueryParams;
-	objectQueryParams.AddObjectTypesToQuery(ECC_PhysicsBody);
-	objectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
-	objectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
-	objectQueryParams.AddObjectTypesToQuery(COLLISION_DEATH_OBJECT);
 
 	FCollisionQueryParams queryParams = FCollisionQueryParams::DefaultQueryParam;
-	queryParams.bReturnPhysicalMaterial = true;
-
-	APawn* pawn = GetPawn();
-	FVector const startTrace = pawn->GetActorLocation();
-	FVector const endTrace = direction * 5000.f + startTrace;
-
-	DrawDebugLine(world, startTrace, endTrace, FColor::Red);
-
-	world->LineTraceMultiByObjectType(m_hitObject.m_OutHits, startTrace, endTrace, objectQueryParams, queryParams);
-	return (m_hitObject.m_hitInformation.GetActor() != nullptr);
-}
-
-bool ASDTAIController::RayCastPlayer(const FVector direction)
-{
-	UWorld * world = GetWorld();
-	if (world == nullptr)
-		return false;
-
-	//Single line trace
-	FCollisionObjectQueryParams objectQueryParams;
-	objectQueryParams.AddObjectTypesToQuery(ECC_PhysicsBody);
-	objectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
-	objectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
-	objectQueryParams.AddObjectTypesToQuery(COLLISION_DEATH_OBJECT);
-
-	FCollisionQueryParams queryParams = FCollisionQueryParams::DefaultQueryParam;
+	queryParams.AddIgnoredActor(GetPawn());
 	queryParams.bReturnPhysicalMaterial = true;
 
 	APawn* pawn = GetPawn();
@@ -143,11 +114,7 @@ bool ASDTAIController::RayCastPlayer(const FVector direction)
 	DrawDebugLine(world, startTrace, endTrace, FColor::Red);
 
 	world->LineTraceSingleByObjectType(m_hitObject.m_hitInformation, startTrace, endTrace, objectQueryParams, queryParams);
-	if (Cast<ASoftDesignTrainingMainCharacter>(m_hitObject.m_hitInformation.GetActor()) != nullptr) {
-		return true;
-	}
-
-	return false;
+	return (m_hitObject.m_hitInformation.GetActor() != nullptr);
 }
 
 bool ASDTAIController::AvoidObstacle(const float deltaTime)
@@ -178,8 +145,9 @@ ASDTAIController::ObstacleType ASDTAIController::GetObstacleType() const
 bool ASDTAIController::ISObstacleDetected()
 {
 	const FVector forwardVectorDirection = GetPawn()->GetActorForwardVector();
-	FVector floorDirection = FVector(0.0f, 0.0f, -1.0f);
-	return //ISCloseToObstacle(floorDirection, 350.f, ObstacleType::Slab) ||
+	FVector floorDirection = forwardVectorDirection;
+	floorDirection.Z = -1.0f;
+	return ISCloseToObstacle(floorDirection, 350.f, ObstacleType::Slab) ||
 		   ISCloseToObstacle(forwardVectorDirection, 150.f, ObstacleType::Wall);
 }
 
@@ -195,8 +163,7 @@ bool ASDTAIController::ISCloseToObstacle(const FVector direction, const float al
 
 bool ASDTAIController::CanFollowPlayer(const FVector direction)
 {
-	return RayCastPlayer(direction);
-		//(RayCast(direction) && Cast<ASoftDesignTrainingMainCharacter>(m_hitObject.m_hitInformation.GetActor()) != nullptr);
+	return (RayCast(direction) && Cast<ASoftDesignTrainingMainCharacter>(m_hitObject.m_hitInformation.GetActor()) != nullptr);
 }
 
 bool ASDTAIController::SphereOverlap(const FVector& pos, float radius, TArray<struct FOverlapResult>& outOverlaps, bool drawDebug)

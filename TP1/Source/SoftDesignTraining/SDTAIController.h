@@ -58,6 +58,7 @@ protected:
 		bool m_obstacleAvoided = true;
 		FVector2D m_obstacleNormal;
 		struct FHitResult m_hitInformation;
+		TArray < struct FHitResult > m_OutHits;
 	};
 
 	void Move(const FVector2D& direction, float acceleration, float maxSpeed, float deltaTime);

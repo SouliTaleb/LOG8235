@@ -8,16 +8,16 @@
 #include "SDTAIController.generated.h"
 
 /**
- * 
+ *
  */
 UCLASS(ClassGroup = AI, config = Game)
 class SOFTDESIGNTRAINING_API ASDTAIController : public AAIController
 {
-    GENERATED_BODY()
+	GENERATED_BODY()
 public:
 	ASDTAIController();
 	virtual void BeginPlay() override;
-    virtual void Tick(float deltaTime) override;
+	virtual void Tick(float deltaTime) override;
 
 protected:
 	enum class State
@@ -26,6 +26,7 @@ protected:
 		AvoidObstacle,
 		MoveAndRotate,
 		FollowPlayer,
+		CatchCollectible,
 		Stop
 	};
 
@@ -34,12 +35,13 @@ protected:
 		Wall,
 		Slab,
 		Player,
+		Collectible,
 		None
 	};
 
 	struct HitObject
 	{
-		void ObstacleDetected(FVector2D obstacleNormal)
+		void ObstacleDetected(FVector obstacleNormal)
 		{
 			m_obstacleNormal = obstacleNormal;
 			m_obstacleAvoided = false;
@@ -56,8 +58,9 @@ protected:
 		}
 
 		bool m_obstacleAvoided = true;
-		FVector2D m_obstacleNormal;
+		FVector m_obstacleNormal;
 		struct FHitResult m_hitInformation;
+		float m_allowedDistanceToHit = 0.0f;
 	};
 
 	void Move(const FVector2D& direction, float acceleration, float maxSpeed, float deltaTime);
@@ -70,21 +73,23 @@ private:
 	ObstacleType GetObstacleType() const;
 	bool SphereOverlap(const FVector& pos, float radius, TArray<struct FOverlapResult>& outOverlaps, bool drawdebug);
 	bool CanFollowPlayer(const FVector direction);
+	bool CanCatchCollectible(const FVector direction);
 	void DebugDrawPrimitive(const UPrimitiveComponent& primitive);
+	void DebugDrawPrimitiveColor(const UPrimitiveComponent& primitive, FColor Color);
+	TArray<FOverlapResult> CollectTargetActorsInFrontOfCharacter(APawn const* pawn);
 	void SetVisibilityInformation(bool isVisible);
 	bool DetectPlayer(float deltaTime);
-
-	TArray<AActor*> GetVisibleActors();
+	bool DetectCollectible(float deltaTime);
 
 private:
 
 	// Visible, shootable
 	UPROPERTY(EditAnywhere)
-	class UMaterial* VisibleMaterial;
+		class UMaterial* VisibleMaterial;
 
 	// not visible, not shootable
 	UPROPERTY(EditAnywhere)
-	class UMaterial* NonVisibleMaterial;
+		class UMaterial* NonVisibleMaterial;
 
 	FVector2D m_MovementInput;
 	FVector2D m_StartingPosition;
@@ -95,8 +100,4 @@ private:
 	State m_state = State::MoveForward;
 	HitObject m_hitObject;
 	float const m_visionAngle = PI / 3.0f;
-
-	const float VisionRange = 1500.0f;
-
-	const bool DrawDebug = true;
 };

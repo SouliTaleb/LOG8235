@@ -8,6 +8,7 @@
 #include "DrawDebugHelpers.h"
 #include "CollisionQueryParams.h"
 #include "SoftDesignTrainingMainCharacter.h"
+#include "SDTCollectible.h"
 
 ASDTAIController::ASDTAIController()
 {
@@ -29,62 +30,103 @@ void ASDTAIController::BeginPlay()
 
 void ASDTAIController::Tick(float deltaTime)
 {
-	TArray<AActor*> visibleActors = GetVisibleActors();
 	
-	//DetectPlayer(deltaTime);
-	//m_state = State::MoveForward;
-	//
-	//FVector const actorForwardDirection = GetPawn()->GetActorForwardVector();
-	//struct FHitResult hitResult;
-	//switch (m_state)
-	//{
-	//	case State::MoveForward:
-	//	{
-	//		Move(FVector2D(actorForwardDirection), m_maxAcceleration, m_maxSpeed, deltaTime);			
-	//		if (ISObstacleDetected())
-	//			m_state = State::AvoidObstacle;
-	//		break;
-	//	}
-	//	case State::AvoidObstacle:
-	//	{
-	//		//m_obstacleInformation.ObstacleDetected(FVector2D(m_hitObject.m_hitInformation.ImpactNormal));
-	//		AvoidObstacle(deltaTime);
-	//		m_state = State::MoveForward;
-	//		break;
-	//	}
-	//	case State::FollowPlayer:
-	//	{
-	//		if(!DetectPlayer(deltaTime))
-	//			m_state = State::MoveForward;
-	//		break;
-	//	}
-	//	default: break;
-	//};
+	if (!DetectCollectible(deltaTime)) {
+		DetectPlayer(deltaTime);
+	}
+
+	FVector const actorForwardDirection = GetPawn()->GetActorForwardVector();
+	struct FHitResult hitResult;
+	switch (m_state)
+	{
+	case State::MoveForward:
+	{
+		Move(FVector2D(actorForwardDirection), m_maxAcceleration, m_maxSpeed, deltaTime);
+		if (ISObstacleDetected())
+			m_state = State::AvoidObstacle;
+	}
+	break;
+	case State::AvoidObstacle:
+	{
+		m_hitObject.m_obstacleNormal = m_hitObject.m_hitInformation.ImpactNormal;
+		AvoidObstacle(deltaTime);
+		m_state = State::MoveForward;
+	}
+	break;
+	case State::FollowPlayer:
+	{
+		if (!DetectPlayer(deltaTime))
+			m_state = State::MoveForward;
+	}
+	break;
+	case State::CatchCollectible:
+	{
+		if (!DetectCollectible(deltaTime))
+			m_state = State::MoveForward;
+	}
+	break;
+	default: break;
+	};
 }
 
 
 bool ASDTAIController::DetectPlayer(float deltaTime)
 {
-	TArray<AActor*> foundActors = GetVisibleActors();
-	for (AActor * actor : foundActors)
+	TArray<FOverlapResult> foundActors = CollectTargetActorsInFrontOfCharacter(GetPawn());
+	for (FOverlapResult overlapResult : foundActors)
 	{
-		FVector test = actor->GetActorLocation();
-		DrawDebugLine(GetWorld(), GetPawn()->GetActorLocation(), test, FColor::Blue);
-
-		ASoftDesignTrainingMainCharacter* targetActor = Cast<ASoftDesignTrainingMainCharacter>(actor);
+		ASoftDesignTrainingMainCharacter* targetActor = Cast<ASoftDesignTrainingMainCharacter>(overlapResult.GetActor());
 		if (targetActor != nullptr)
 		{
-				const FVector targetLocation = targetActor->GetActorLocation();
-				const FVector pawnLocation = GetPawn()->GetActorLocation();
+			const FVector targetLocation = targetActor->GetActorLocation();
+			const FVector pawnLocation = GetPawn()->GetActorLocation();
 
-				FVector directionToTarget = (targetLocation - pawnLocation).GetSafeNormal();
-				if (CanFollowPlayer(directionToTarget))
-				{
-					Move(FVector2D(directionToTarget), m_maxAcceleration, m_maxSpeed, deltaTime);
-					return true;
-				}
+			FVector directionToTarget = (targetLocation - pawnLocation).GetSafeNormal();
+			if (CanFollowPlayer(directionToTarget))
+			{
+				Move(FVector2D(directionToTarget), m_maxAcceleration, m_maxSpeed, deltaTime);
+				return true;
+			}
 		}
 	}
+	return false;
+}
+
+bool ASDTAIController::DetectCollectible(float deltaTime)
+{
+	TArray<FOverlapResult> foundActors = CollectTargetActorsInFrontOfCharacter(GetPawn());
+	ASDTCollectible * ClosestCollectible = nullptr;
+	float minDistance = 1000.f;
+	for (FOverlapResult overlapResult : foundActors)
+	{
+		ASDTCollectible* CollectibleActor = Cast<ASDTCollectible>(overlapResult.GetActor());
+		if (CollectibleActor != nullptr && !CollectibleActor->IsOnCooldown())
+		{
+			const FVector targetLocation = CollectibleActor->GetActorLocation();
+			const FVector pawnLocation = GetPawn()->GetActorLocation();
+			float distance = (targetLocation - pawnLocation).Size();
+			FVector directionToTarget = (targetLocation - pawnLocation).GetSafeNormal();
+			if (CanCatchCollectible(directionToTarget))
+			{
+				if (distance < minDistance)
+				{
+					ClosestCollectible = CollectibleActor;
+					minDistance = distance;
+				}
+			}
+		}
+	}
+	if (ClosestCollectible != nullptr)
+	{
+		const FVector targetLocation = ClosestCollectible->GetActorLocation();
+		const FVector pawnLocation = GetPawn()->GetActorLocation();
+		
+		FVector directionToTarget = (targetLocation - pawnLocation).GetSafeNormal();
+		Move(FVector2D(directionToTarget), m_maxAcceleration, m_maxSpeed, deltaTime);
+		m_state = State::CatchCollectible;
+		return true;
+	}
+	
 	return false;
 }
 
@@ -107,14 +149,15 @@ bool ASDTAIController::RayCast(const FVector direction)
 
 	//Single line trace
 	FCollisionObjectQueryParams objectQueryParams;
+
+	FCollisionQueryParams queryParams = FCollisionQueryParams::DefaultQueryParam;
 	objectQueryParams.AddObjectTypesToQuery(ECC_PhysicsBody);
 	objectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
 	objectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
+	objectQueryParams.AddObjectTypesToQuery(ECC_Pawn);
+	objectQueryParams.AddObjectTypesToQuery(COLLISION_COLLECTIBLE);
 	objectQueryParams.AddObjectTypesToQuery(COLLISION_DEATH_OBJECT);
-	objectQueryParams.AddObjectTypesToQuery(ECC_Visibility);
-	objectQueryParams.AddObjectTypesToQuery(ECC_Destructible);
-
-	FCollisionQueryParams queryParams = FCollisionQueryParams::DefaultQueryParam;
+	queryParams.AddIgnoredActor(GetPawn());
 	queryParams.bReturnPhysicalMaterial = true;
 
 	APawn* pawn = GetPawn();
@@ -129,35 +172,40 @@ bool ASDTAIController::RayCast(const FVector direction)
 
 bool ASDTAIController::AvoidObstacle(const float deltaTime)
 {
-	float distanceToImpactPoint = 0.f;
-	distanceToImpactPoint = (m_hitObject.m_hitInformation.ImpactPoint - GetPawn()->GetActorLocation()).Size();
-	if(distanceToImpactPoint <= 150.f)
+	float distanceToImpactPoint = (m_hitObject.m_hitInformation.ImpactPoint - GetPawn()->GetActorLocation()).Size();
+	if (distanceToImpactPoint <= m_hitObject.m_allowedDistanceToHit)
 	{
-		FVector2D const newActorDirection = FVector2D(FVector::CrossProduct(FVector::UpVector, FVector(m_hitObject.m_obstacleNormal, 0.0f)));
+		FVector2D const newActorDirection = FVector2D(FVector::CrossProduct(FVector::UpVector, GetPawn()->GetActorForwardVector()/*m_hitObject.m_obstacleNormal*/));
 		Move(newActorDirection, m_maxAcceleration, m_maxSpeed, deltaTime);
 	}
-	return true; 
+	return true;
 }
 
 ASDTAIController::ObstacleType ASDTAIController::GetObstacleType() const
 {
 	FName nameActor = m_hitObject.m_hitInformation.GetActor()->GetFName();
 	FName nameComponent = m_hitObject.m_hitInformation.GetComponent()->GetFName();
+	FString test = nameActor.ToString();
+	//UE_LOG(LogTemp, Warning, TEXT("UMyClass %s entering FireWeapon()"), nameActor.ToString());
 	if (nameActor.ToString().StartsWith("Wall") && nameComponent.ToString().StartsWith("StaticMeshComponent"))
 		return ObstacleType::Wall;
-	else if(nameActor.ToString().StartsWith("Slab") && nameComponent.ToString().StartsWith("StaticMeshComponent"))
+	else if (nameActor.ToString().StartsWith("Slab") && nameComponent.ToString().StartsWith("StaticMeshComponent"))
 		return ObstacleType::Slab;
 	else if (nameActor.ToString().StartsWith("BP_SDTMainCharacter_C") && nameComponent.ToString().StartsWith("StaticMeshComponent"))
 		return ObstacleType::Player;
+	else if (nameActor.ToString().StartsWith("BP_SDTCollectible") && nameComponent.ToString().StartsWith("StaticMeshComponent"))
+		return ObstacleType::Collectible;
 	else return ObstacleType::None;
 }
 
 bool ASDTAIController::ISObstacleDetected()
 {
 	const FVector forwardVectorDirection = GetPawn()->GetActorForwardVector();
-	FVector floorDirection = FVector(0.0f, 0.0f, -1.0f);
-	return //ISCloseToObstacle(floorDirection, 350.f, ObstacleType::Slab) ||
-		   ISCloseToObstacle(forwardVectorDirection, 150.f, ObstacleType::Wall);
+	FVector floorDirection = forwardVectorDirection;
+	floorDirection.Z= -.25f;
+	floorDirection.GetSafeNormal();
+	return ISCloseToObstacle(floorDirection, 150.f, ObstacleType::Slab) ||
+		ISCloseToObstacle(forwardVectorDirection, 150.f, ObstacleType::Wall);
 }
 
 bool ASDTAIController::ISCloseToObstacle(const FVector direction, const float allowedDistance, const ObstacleType obstacleType)
@@ -165,6 +213,7 @@ bool ASDTAIController::ISCloseToObstacle(const FVector direction, const float al
 	if (RayCast(direction) && GetObstacleType() == obstacleType)
 	{
 		float distanceToImpactPoint = (m_hitObject.m_hitInformation.ImpactPoint - GetPawn()->GetActorLocation()).Size();
+		m_hitObject.m_allowedDistanceToHit = allowedDistance;
 		return (distanceToImpactPoint <= allowedDistance);
 	}
 	return false;
@@ -172,7 +221,13 @@ bool ASDTAIController::ISCloseToObstacle(const FVector direction, const float al
 
 bool ASDTAIController::CanFollowPlayer(const FVector direction)
 {
-	return (RayCast(direction) && Cast<ASoftDesignTrainingMainCharacter>(m_hitObject.m_hitInformation.GetActor()) != nullptr);
+	bool result = (RayCast(direction) && Cast<ASoftDesignTrainingMainCharacter>(m_hitObject.m_hitInformation.GetActor()) != nullptr);
+	return result;
+}
+
+bool ASDTAIController::CanCatchCollectible(const FVector direction)
+{
+	return (RayCast(direction) && Cast<ASDTCollectible>(m_hitObject.m_hitInformation.GetActor()) != nullptr);
 }
 
 bool ASDTAIController::SphereOverlap(const FVector& pos, float radius, TArray<struct FOverlapResult>& outOverlaps, bool drawDebug)
@@ -200,58 +255,20 @@ bool ASDTAIController::SphereOverlap(const FVector& pos, float radius, TArray<st
 		{
 			if (outOverlaps[i].GetComponent())
 				DebugDrawPrimitive(*(outOverlaps[i].GetComponent()));
+			if (Cast<ASDTCollectible>(outOverlaps[i].GetActor()) != nullptr) {
+				DebugDrawPrimitiveColor(*(outOverlaps[i].GetComponent()), FColor::Purple);
+			}
 		}
 	}
 
 	return outOverlaps.Num() > 0;
 }
 
-//TArray<FOverlapResult> ASDTAIController::CollectTargetActorsInFrontOfCharacter(APawn const* pawn) 
-//{
-//	TArray<FOverlapResult> outResults;
-//	SphereOverlap(pawn->GetActorLocation() + pawn->GetActorForwardVector() * 750.0f, 1000.0f, outResults, true);
-//	return outResults;
-//}
-
-TArray<AActor*> ASDTAIController::GetVisibleActors()
+TArray<FOverlapResult> ASDTAIController::CollectTargetActorsInFrontOfCharacter(APawn const* pawn)
 {
-	TArray<AActor*> result;
-
-	const APawn * pawn = GetPawn();
-	const UWorld * world = GetWorld();
-
-	TArray<FOverlapResult> overlapResults;
-	SphereOverlap(pawn->GetActorLocation() + pawn->GetActorForwardVector() * VisionRange / 2, VisionRange / 2, overlapResults, DrawDebug);
-
-	// Object types to query (collisions with other objects)
-	TArray<TEnumAsByte<EObjectTypeQuery>> objectQueryParams;
-	objectQueryParams.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic));
-
-	for (const FOverlapResult & overlapResult : overlapResults)
-	{
-		AActor * actor = overlapResult.GetActor();
-
-		// Query params
-		FCollisionQueryParams queryParams = FCollisionQueryParams();
-		queryParams.AddIgnoredActor(actor);
-
-		FHitResult hitResult;
-		
-		bool isHit = world->LineTraceSingleByObjectType(hitResult, pawn->GetActorLocation(), actor->GetActorLocation(), objectQueryParams, queryParams);
-
-		// Filter out those that are blocked by an obstacle
-		if (!isHit)
-		{
-			if (DrawDebug)
-			{
-				DrawDebugLine(world, pawn->GetActorLocation(), actor->GetActorLocation(), FColor::Red);
-			}
-
-			result.Add(actor);
-		}
-	}
-
-	return result;
+	TArray<FOverlapResult> outResults;
+	SphereOverlap(pawn->GetActorLocation() + pawn->GetActorForwardVector() * 750.0f, 1000.0f, outResults, true);
+	return outResults;
 }
 
 void ASDTAIController::DebugDrawPrimitive(const UPrimitiveComponent& primitive)
@@ -262,4 +279,14 @@ void ASDTAIController::DebugDrawPrimitive(const UPrimitiveComponent& primitive)
 	if (world == nullptr)
 		return;
 	DrawDebugBox(world, center, extent, FColor::Red);
+}
+
+void ASDTAIController::DebugDrawPrimitiveColor(const UPrimitiveComponent& primitive, FColor color)
+{
+	FVector center = primitive.Bounds.Origin;
+	FVector extent = primitive.Bounds.BoxExtent;
+	UWorld * world = GetWorld();
+	if (world == nullptr)
+		return;
+	DrawDebugBox(world, center, extent, color);
 }

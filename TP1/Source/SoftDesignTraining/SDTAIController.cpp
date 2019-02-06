@@ -81,17 +81,6 @@ bool ASDTAIController::IsPlayerDetected(FOverlapResult& overlapActor)
 
 	for (FOverlapResult overlapResult : foundActors)
 	{
-		//ASDTCollectible* collectibleActor = dynamic_cast<ASDTCollectible*>(overlapResult.GetActor());
-		//if (IsPickUpInFrontOfAIActor(collectibleActor))
-		//{
-		//	overlapActor = overlapResult;
-		//	return true;
-		//}		
-		//if (playerActor == nullptr)
-		//{
-		//	playerActor = dynamic_cast<ASoftDesignTrainingMainCharacter*>(overlapResult.GetActor());
-		//	overlapActor = overlapResult;
-		//}
 		playerActor = dynamic_cast<ASoftDesignTrainingMainCharacter*>(overlapResult.GetActor());
 		if (playerActor != nullptr)
 		{
@@ -99,10 +88,6 @@ bool ASDTAIController::IsPlayerDetected(FOverlapResult& overlapActor)
 			return CanReachTarget(playerActor, ObjectType::Player);
 		}
 	}
-	//if(playerActor != nullptr && CanReachTarget(playerActor, ObjectType::Player))
-	//{
-	//	return true;
-	//}
 	return false;
 }
 
@@ -111,12 +96,8 @@ bool ASDTAIController::IsPickUpDetected(FOverlapResult& overlapActor)
 
 	TArray<FOverlapResult> outResults;
 	APawn* pawn = GetPawn();
-	SphereOverlap(pawn->GetActorLocation() /*+ pawn->GetActorForwardVector() * 500.0f*/, 1000.0f, outResults, true, true);
+	SphereOverlap(pawn->GetActorLocation(), 1000.0f, outResults, true, true);
 
-
-//	TArray<FOverlapResult> outResults;
-//	APawn* pawn = GetPawn();
-//	CapsuleOverlap(pawn->GetActorLocation() + pawn->GetActorForwardVector() * 400.0f, outResults, true);
 	float minDistance = 10000.f;
 	bool isPickUpDetected = false;
 	for (FOverlapResult overlapResult : outResults)
@@ -161,7 +142,7 @@ void ASDTAIController::Move(const FVector2D& direction, float acceleration, floa
 	pawn->AddMovementInput(FVector(direction, 0.f), m_currentSpeed);
 }
 
-bool ASDTAIController::RayCast(const FVector direction, ObjectType targetedObject)
+bool ASDTAIController::RayCast(const FVector direction)
 {
 	UWorld * world = GetWorld();
 	if (world == nullptr)
@@ -171,17 +152,12 @@ bool ASDTAIController::RayCast(const FVector direction, ObjectType targetedObjec
 	FCollisionObjectQueryParams objectQueryParams;
 
 	FCollisionQueryParams queryParams = FCollisionQueryParams::DefaultQueryParam;
-	//if(targetedObject == ObjectType::DeathFloor)
-		objectQueryParams.AddObjectTypesToQuery(COLLISION_DEATH_OBJECT);
-	//else if (targetedObject == ObjectType::PickUp)
-	//{
-		objectQueryParams.AddObjectTypesToQuery(COLLISION_COLLECTIBLE);
-		objectQueryParams.AddObjectTypesToQuery(ECC_PhysicsBody);
-		objectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
-		objectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
-		objectQueryParams.AddObjectTypesToQuery(ECC_Pawn);
-
-	//}
+	objectQueryParams.AddObjectTypesToQuery(COLLISION_DEATH_OBJECT);
+	objectQueryParams.AddObjectTypesToQuery(COLLISION_COLLECTIBLE);
+	objectQueryParams.AddObjectTypesToQuery(ECC_PhysicsBody);
+	objectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
+	objectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
+	objectQueryParams.AddObjectTypesToQuery(ECC_Pawn);
 
 	queryParams.AddIgnoredActor(GetPawn());
 	queryParams.bReturnPhysicalMaterial = true;
@@ -233,7 +209,7 @@ bool ASDTAIController::ISObstacleDetected()
 
 bool ASDTAIController::ISCloseToObject(const FVector direction, const float allowedDistance, const ObjectType objectType)
 {
-	if (RayCast(direction, objectType) && GetObjectType() == objectType)
+	if (RayCast(direction) && GetObjectType() == objectType)
 	{
 		float distanceToImpactPoint = (m_hitObject.m_hitInformation.ImpactPoint - GetPawn()->GetActorLocation()).Size();
 		m_hitObject.m_allowedDistanceToHit = allowedDistance;
@@ -248,7 +224,7 @@ bool ASDTAIController::CanReachTarget(const AActor* const targetActor, ObjectTyp
 	const FVector pawnLocation = GetPawn()->GetActorLocation();
 
 	FVector directionToTarget = (targetLocation - pawnLocation).GetSafeNormal();
-	if (RayCast(directionToTarget, objectType))
+	if (RayCast(directionToTarget))
 	{
 		if(objectType == ObjectType::Player)
 			return dynamic_cast<ASoftDesignTrainingMainCharacter*>(m_hitObject.m_hitInformation.GetActor()) != nullptr;

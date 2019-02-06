@@ -50,13 +50,15 @@ private:
 	bool RayCast(const FVector direction, ObjectType targetedObject);
 	bool AvoidObstacle(const float deltaTime);
 	bool ISObstacleDetected();
-	bool ISCloseToObstacle(const FVector direction, const float allowedDistance, const ObjectType objectType);
+	bool ISCloseToObject(const FVector direction, const float allowedDistance, const ObjectType objectType);
 	ObjectType GetObjectType() const;
-	bool SphereOverlap(const FVector& pos, float radius, TArray<struct FOverlapResult>& outOverlaps, bool drawdebug);
+	bool SphereOverlap(const FVector& pos, float radius, TArray<struct FOverlapResult>& outOverlaps, bool drawdebug, bool isForPickUps = false);
+	bool CapsuleOverlap(const FVector& pos, TArray<struct FOverlapResult>& outOverlaps, bool drawDebug);
 	bool CanReachTarget(const AActor* const targetActor, ObjectType objectType);
 	void DebugDrawPrimitive(const UPrimitiveComponent& primitive);
 	TArray<FOverlapResult> CollectTargetActorsInFrontOfCharacter(APawn const* pawn);
-	bool IsActorDetected(FOverlapResult& overlapActor);
+	bool IsPlayerDetected(FOverlapResult& overlapActor);
+	bool IsPickUpDetected(FOverlapResult& overlapActor);
 	bool IsPickUpInFrontOfAIActor(const ASDTCollectible* const pickUpActor);
 	void ReachTarget(float deltaTime, AActor* targetActor);
 

@@ -29,16 +29,19 @@ void ASDTAIController::BeginPlay()
 
 void ASDTAIController::Tick(float deltaTime)
 {
-	//IsActorDetected(deltaTime);
+	//IsPlayerDetected(deltaTime);
 
 	FVector const actorForwardDirection = GetPawn()->GetActorForwardVector();
 	struct FHitResult hitResult;
-	FOverlapResult overlapActor;
-	
-	if (IsActorDetected(overlapActor))
-		ReachTarget(deltaTime, overlapActor.GetActor());
-	else if (ISObstacleDetected())
-		AvoidObstacle(deltaTime);
+	FOverlapResult overlapPlayer;
+	FOverlapResult overlapPickUp;
+	//Move(FVector2D(actorForwardDirection), m_maxAcceleration, m_maxSpeed, deltaTime);
+	if (IsPickUpDetected(overlapPickUp))
+		ReachTarget(deltaTime, overlapPickUp.GetActor());
+	//else if (IsPlayerDetected(overlapPlayer))
+	//	ReachTarget(deltaTime, overlapPlayer.GetActor());
+	//else if (ISObstacleDetected())
+	//	AvoidObstacle(deltaTime);
 	else
 		Move(FVector2D(actorForwardDirection), m_maxAcceleration, m_maxSpeed, deltaTime);
 		
@@ -61,7 +64,7 @@ void ASDTAIController::Tick(float deltaTime)
 	//case State::ReachActor:
 	//{
 	//	AActor* actor = nullptr;
-	//	if (IsActorDetected(actor))
+	//	if (IsPlayerDetected(actor))
 	//		ReachTarget(deltaTime, actor);
 	//	else
 	//		m_state = State::MoveForward;
@@ -71,7 +74,7 @@ void ASDTAIController::Tick(float deltaTime)
 	//};
 }
 
-bool ASDTAIController::IsActorDetected(FOverlapResult& overlapActor)
+bool ASDTAIController::IsPlayerDetected(FOverlapResult& overlapActor)
 {
 	TArray<FOverlapResult> foundActors = CollectTargetActorsInFrontOfCharacter(GetPawn());
 	ASoftDesignTrainingMainCharacter* playerActor = nullptr;
@@ -100,6 +103,30 @@ bool ASDTAIController::IsActorDetected(FOverlapResult& overlapActor)
 	//{
 	//	return true;
 	//}
+	return false;
+}
+
+bool ASDTAIController::IsPickUpDetected(FOverlapResult& overlapActor)
+{
+
+	TArray<FOverlapResult> outResults;
+	APawn* pawn = GetPawn();
+	SphereOverlap(pawn->GetActorLocation() /*+ pawn->GetActorForwardVector() * 500.0f*/, 1000.0f, outResults, true, true);
+
+
+//	TArray<FOverlapResult> outResults;
+//	APawn* pawn = GetPawn();
+//	CapsuleOverlap(pawn->GetActorLocation() + pawn->GetActorForwardVector() * 400.0f, outResults, true);
+
+	for (FOverlapResult overlapResult : outResults)
+	{
+		ASDTCollectible* collectible = dynamic_cast<ASDTCollectible*>(overlapResult.GetActor());
+		if (collectible != nullptr && !collectible->IsOnCooldown() && CanReachTarget(collectible, ObjectType::PickUp))
+		{
+			overlapActor = overlapResult;
+			return true;
+		}		
+	}
 	return false;
 }
 
@@ -140,9 +167,14 @@ bool ASDTAIController::RayCast(const FVector direction, ObjectType targetedObjec
 	FCollisionQueryParams queryParams = FCollisionQueryParams::DefaultQueryParam;
 	if(targetedObject == ObjectType::DeathFloor)
 		objectQueryParams.AddObjectTypesToQuery(COLLISION_DEATH_OBJECT);
-	else if(targetedObject == ObjectType::PickUp)
+	else if (targetedObject == ObjectType::PickUp)
+	{
 		objectQueryParams.AddObjectTypesToQuery(COLLISION_COLLECTIBLE);
-	
+		objectQueryParams.AddObjectTypesToQuery(ECC_PhysicsBody);
+		objectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
+		objectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
+	}
+
 	queryParams.AddIgnoredActor(GetPawn());
 	queryParams.bReturnPhysicalMaterial = true;
 
@@ -175,9 +207,10 @@ ASDTAIController::ObjectType ASDTAIController::GetObjectType() const
 		return ObjectType::Wall;
 	else if (nameActor.ToString().StartsWith("BP_DeathFloor"))
 		return ObjectType::DeathFloor;
-	//else if (nameActor.ToString().StartsWith("BP_SDTMainCharacter_C"))
-	//	return ObjectType::Player;
-	else return ObjectType::None;
+	else if (dynamic_cast<ASDTCollectible*>(m_hitObject.m_hitInformation.GetActor()) != nullptr)
+		return ObjectType::PickUp;
+	else 
+		return ObjectType::None;
 }
 
 bool ASDTAIController::ISObstacleDetected()
@@ -186,11 +219,11 @@ bool ASDTAIController::ISObstacleDetected()
 	FVector floorDirection = forwardVectorDirection;
 	floorDirection.Z= -1.f;
 	floorDirection.Normalize();
-	return ISCloseToObstacle(floorDirection, 700.f, ObjectType::DeathFloor) ||
-		ISCloseToObstacle(forwardVectorDirection, 150.f, ObjectType::Wall);
+	return ISCloseToObject(floorDirection, 700.f, ObjectType::DeathFloor) ||
+		ISCloseToObject(forwardVectorDirection, 150.f, ObjectType::Wall);
 }
 
-bool ASDTAIController::ISCloseToObstacle(const FVector direction, const float allowedDistance, const ObjectType objectType)
+bool ASDTAIController::ISCloseToObject(const FVector direction, const float allowedDistance, const ObjectType objectType)
 {
 	if (RayCast(direction, objectType) && GetObjectType() == objectType)
 	{
@@ -217,7 +250,7 @@ bool ASDTAIController::CanReachTarget(const AActor* const targetActor, ObjectTyp
 	return false;
 }
 
-bool ASDTAIController::SphereOverlap(const FVector& pos, float radius, TArray<struct FOverlapResult>& outOverlaps, bool drawDebug)
+bool ASDTAIController::SphereOverlap(const FVector& pos, float radius, TArray<struct FOverlapResult>& outOverlaps, bool drawDebug, bool isForPickUps)
 {
 	UWorld * world = GetWorld();
 	if (world == nullptr)
@@ -228,8 +261,41 @@ bool ASDTAIController::SphereOverlap(const FVector& pos, float radius, TArray<st
 
 
 	FCollisionObjectQueryParams objectQueryParams; // All objects
+	if (isForPickUps)
+		objectQueryParams.AddObjectTypesToQuery(COLLISION_COLLECTIBLE);
 	FCollisionShape collisionShape;
 	collisionShape.SetSphere(radius);
+	FCollisionQueryParams queryParams = FCollisionQueryParams::DefaultQueryParam;
+	queryParams.bReturnPhysicalMaterial = true;
+
+	world->OverlapMultiByObjectType(outOverlaps, pos, FQuat::Identity, objectQueryParams, collisionShape, queryParams);
+
+	//Draw overlap results
+	if (drawDebug)
+	{
+		for (int32 i = 0; i < outOverlaps.Num(); ++i)
+		{
+			if (outOverlaps[i].GetComponent())
+				DebugDrawPrimitive(*(outOverlaps[i].GetComponent()));
+		}
+	}
+
+	return outOverlaps.Num() > 0;
+}
+
+bool ASDTAIController::CapsuleOverlap(const FVector& pos, TArray<struct FOverlapResult>& outOverlaps, bool drawDebug)
+{
+	UWorld * world = GetWorld();
+	if (world == nullptr)
+		return false;
+
+	if (drawDebug)
+		DrawDebugBox(world, pos, FVector(400, 80, 50), FColor::Green);
+
+	FCollisionObjectQueryParams objectQueryParams; // All objects
+	objectQueryParams.AddObjectTypesToQuery(COLLISION_COLLECTIBLE);
+	FCollisionShape collisionShape;
+	collisionShape.SetBox(FVector(400, 80, 100));
 	FCollisionQueryParams queryParams = FCollisionQueryParams::DefaultQueryParam;
 	queryParams.bReturnPhysicalMaterial = true;
 

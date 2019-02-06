@@ -38,10 +38,10 @@ void ASDTAIController::Tick(float deltaTime)
 	//Move(FVector2D(actorForwardDirection), m_maxAcceleration, m_maxSpeed, deltaTime);
 	if (IsPickUpDetected(overlapPickUp))
 		ReachTarget(deltaTime, overlapPickUp.GetActor());
-	//else if (IsPlayerDetected(overlapPlayer))
-	//	ReachTarget(deltaTime, overlapPlayer.GetActor());
-	//else if (ISObstacleDetected())
-	//	AvoidObstacle(deltaTime);
+	else if (IsPlayerDetected(overlapPlayer))
+		ReachTarget(deltaTime, overlapPlayer.GetActor());
+	else if (ISObstacleDetected())
+		AvoidObstacle(deltaTime);
 	else
 		Move(FVector2D(actorForwardDirection), m_maxAcceleration, m_maxSpeed, deltaTime);
 		
@@ -117,17 +117,23 @@ bool ASDTAIController::IsPickUpDetected(FOverlapResult& overlapActor)
 //	TArray<FOverlapResult> outResults;
 //	APawn* pawn = GetPawn();
 //	CapsuleOverlap(pawn->GetActorLocation() + pawn->GetActorForwardVector() * 400.0f, outResults, true);
-
+	float minDistance = 10000.f;
+	bool isPickUpDetected = false;
 	for (FOverlapResult overlapResult : outResults)
 	{
 		ASDTCollectible* collectible = dynamic_cast<ASDTCollectible*>(overlapResult.GetActor());
-		if (collectible != nullptr && !collectible->IsOnCooldown() && CanReachTarget(collectible, ObjectType::PickUp))
+		if (collectible != nullptr && !collectible->IsOnCooldown() && IsPickUpInFrontOfAIActor(collectible) && CanReachTarget(collectible, ObjectType::PickUp))
 		{
-			overlapActor = overlapResult;
-			return true;
+			float newDistance = (collectible->GetActorLocation() - GetPawn()->GetActorLocation()).Size();
+			if (newDistance < minDistance)
+			{
+				minDistance = newDistance;
+				overlapActor = overlapResult;
+				isPickUpDetected = true;
+			}
 		}		
 	}
-	return false;
+	return isPickUpDetected;
 }
 
 void ASDTAIController::ReachTarget(float deltaTime, AActor* targetActor)
@@ -165,15 +171,17 @@ bool ASDTAIController::RayCast(const FVector direction, ObjectType targetedObjec
 	FCollisionObjectQueryParams objectQueryParams;
 
 	FCollisionQueryParams queryParams = FCollisionQueryParams::DefaultQueryParam;
-	if(targetedObject == ObjectType::DeathFloor)
+	//if(targetedObject == ObjectType::DeathFloor)
 		objectQueryParams.AddObjectTypesToQuery(COLLISION_DEATH_OBJECT);
-	else if (targetedObject == ObjectType::PickUp)
-	{
+	//else if (targetedObject == ObjectType::PickUp)
+	//{
 		objectQueryParams.AddObjectTypesToQuery(COLLISION_COLLECTIBLE);
 		objectQueryParams.AddObjectTypesToQuery(ECC_PhysicsBody);
 		objectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
 		objectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
-	}
+		objectQueryParams.AddObjectTypesToQuery(ECC_Pawn);
+
+	//}
 
 	queryParams.AddIgnoredActor(GetPawn());
 	queryParams.bReturnPhysicalMaterial = true;

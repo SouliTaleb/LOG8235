@@ -53,7 +53,6 @@ private:
 	bool ISCloseToObject(const FVector direction, const float allowedDistance, const ObjectType objectType);
 	ObjectType GetObjectType() const;
 	bool SphereOverlap(const FVector& pos, float radius, TArray<struct FOverlapResult>& outOverlaps, bool drawdebug, bool isForPickUps = false);
-	bool CapsuleOverlap(const FVector& pos, TArray<struct FOverlapResult>& outOverlaps, bool drawDebug);
 	bool CanReachTarget(const AActor* const targetActor, ObjectType objectType);
 	void DebugDrawPrimitive(const UPrimitiveComponent& primitive);
 	TArray<FOverlapResult> CollectTargetActorsInFrontOfCharacter(APawn const* pawn);
@@ -71,5 +70,5 @@ private:
 	float const m_maxAcceleration = 500.0f;
 	State m_state = State::ReachActor;
 	HitObject m_hitObject;
-	float const m_visionAngle = PI / 3.0f;
+	float const m_visionAngle = 90.f;  // Degree angle value
 };

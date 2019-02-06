@@ -267,37 +267,6 @@ bool ASDTAIController::SphereOverlap(const FVector& pos, float radius, TArray<st
 	return outOverlaps.Num() > 0;
 }
 
-bool ASDTAIController::CapsuleOverlap(const FVector& pos, TArray<struct FOverlapResult>& outOverlaps, bool drawDebug)
-{
-	UWorld * world = GetWorld();
-	if (world == nullptr)
-		return false;
-
-	if (drawDebug)
-		DrawDebugBox(world, pos, FVector(400, 80, 50), FColor::Green);
-
-	FCollisionObjectQueryParams objectQueryParams; // All objects
-	objectQueryParams.AddObjectTypesToQuery(COLLISION_COLLECTIBLE);
-	FCollisionShape collisionShape;
-	collisionShape.SetBox(FVector(400, 80, 100));
-	FCollisionQueryParams queryParams = FCollisionQueryParams::DefaultQueryParam;
-	queryParams.bReturnPhysicalMaterial = true;
-
-	world->OverlapMultiByObjectType(outOverlaps, pos, FQuat::Identity, objectQueryParams, collisionShape, queryParams);
-
-	//Draw overlap results
-	if (drawDebug)
-	{
-		for (int32 i = 0; i < outOverlaps.Num(); ++i)
-		{
-			if (outOverlaps[i].GetComponent())
-				DebugDrawPrimitive(*(outOverlaps[i].GetComponent()));
-		}
-	}
-
-	return outOverlaps.Num() > 0;
-}
-
 TArray<FOverlapResult> ASDTAIController::CollectTargetActorsInFrontOfCharacter(APawn const* pawn)
 {
 	TArray<FOverlapResult> outResults;

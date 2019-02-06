@@ -126,7 +126,7 @@ void ASDTAIController::ReachTarget(float deltaTime, AActor* targetActor)
 
 		FVector directionToTarget = (targetLocation - pawnLocation);
 		if(directionToTarget.Size() > 50.f)
-			Move(FVector2D(directionToTarget.GetSafeNormal()), m_maxAcceleration, m_maxSpeed, deltaTime);
+			Move(FVector2D(directionToTarget/*.GetSafeNormal()*/), m_maxAcceleration, m_maxSpeed, deltaTime);
 	}
 }
 
@@ -136,12 +136,49 @@ void ASDTAIController::Move(const FVector2D& direction, float acceleration, floa
 	m_currentSpeed = FMath::Min(maxSpeed, m_currentSpeed + acceleration * deltaTime);
 	FVector const forwardDirection = GetPawn()->GetActorForwardVector();
 	
-	float AimAtAngle = FMath::RadiansToDegrees(acosf(FVector::DotProduct(forwardDirection, FVector(direction, 0.f))));
+	float AimAtAngle = acos(FVector::DotProduct(forwardDirection, FVector(direction, 0.f)));
+	FVector crossProduct = FVector::CrossProduct(forwardDirection.GetSafeNormal(), FVector(direction, 0.f).GetSafeNormal()).GetSafeNormal();
+	if (crossProduct.Z == 1.f)
+		AimAtAngle = -AimAtAngle;
 	FRotator NewRotation = FRotator(0, AimAtAngle, 0);
 	pawn->AddActorWorldRotation(NewRotation);
 	pawn->AddMovementInput(FVector(direction, 0.f), m_currentSpeed);
 }
 
+
+/*void ASDTAIController::Move(const FVector2D& direction, float acceleration, float maxSpeed, float deltaTime)
+{
+	APawn* pawn = GetPawn();
+	m_currentSpeed = FMath::Min(maxSpeed, m_currentSpeed + acceleration * deltaTime);
+	FVector const forwardDirection = GetPawn()->GetActorForwardVector();
+
+	float AimAtAngle = acos(FVector::DotProduct(forwardDirection, FVector(direction, 0.f)));
+	FRotator NewRotation = FRotator(0, AimAtAngle, 0);
+	pawn->AddActorWorldRotation(NewRotation);
+	pawn->AddMovementInput(FVector(direction, 0.f), m_currentSpeed);
+}*/
+
+/*
+void ASDTAIController::Move(const FVector2D& direction, float acceleration, float maxSpeed, float deltaTime)
+{
+	APawn* pawn = GetPawn();
+	FVector const pawnPosition(pawn->GetActorLocation());
+	//FVector2D const toTarget = target - FVector2D(pawnPosition);
+	FVector2D const displacement = FMath::Min(direction.Size(), FMath::Min(m_maxSpeed, maxSpeed) * deltaTime) * direction.GetSafeNormal();
+	pawn->SetActorLocation(pawnPosition + FVector(displacement, 0.f), true);
+	pawn->SetActorRotation(FVector(displacement, 0.f).ToOrientationQuat());
+	//return direction.Size() < FMath::Min(m_maxSpeed, direction) * deltaTime;
+}*/
+/*
+void ASDTAIController::Move(const FVector2D& direction, float acceleration, float maxSpeed, float deltaTime)
+{
+	APawn* pawn = GetPawn();
+	FVector const pawnPosition(pawn->GetActorLocation());
+	FVector2D const displacement = FMath::Min(m_maxSpeed, maxSpeed) * deltaTime * direction.GetSafeNormal();
+	pawn->SetActorLocation(pawnPosition + FVector(displacement, 0.f), true);
+	pawn->SetActorRotation(FVector(direction, 0.f).ToOrientationQuat());
+}
+*/
 bool ASDTAIController::RayCast(const FVector direction)
 {
 	UWorld * world = GetWorld();
@@ -291,5 +328,5 @@ bool ASDTAIController::IsPickUpInFrontOfAIActor(const ASDTCollectible* const pic
 	FVector const toTarget = pickUpActor->GetActorLocation() - GetPawn()->GetActorLocation();
 	FVector const pawnForward = GetPawn()->GetActorForwardVector();
 	bool isPickUpInsideCone = std::abs(std::acos(FVector::DotProduct(pawnForward.GetSafeNormal(), toTarget.GetSafeNormal()))) < m_visionAngle;
-	return  isPickUpInsideCone && CanReachTarget(pickUpActor, ObjectType::PickUp);
+	return  isPickUpInsideCone /* && CanReachTarget(pickUpActor, ObjectType::PickUp)*/;
 }

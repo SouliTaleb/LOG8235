@@ -70,5 +70,5 @@ private:
 	float const m_maxAcceleration = 500.0f;
 	State m_state = State::ReachActor;
 	HitObject m_hitObject;
-	float const m_visionAngle = 90.f;  // Degree angle value
+	float const m_visionAngle = PI / 2.0f;  // Degree angle value
 };

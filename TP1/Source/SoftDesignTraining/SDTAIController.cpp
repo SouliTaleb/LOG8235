@@ -38,10 +38,10 @@ void ASDTAIController::Tick(float deltaTime)
 	//Move(FVector2D(actorForwardDirection), m_maxAcceleration, m_maxSpeed, deltaTime);
 	if (IsPickUpDetected(overlapPickUp))
 		ReachTarget(deltaTime, overlapPickUp.GetActor());
-	//else if (IsPlayerDetected(overlapPlayer))
-	//	ReachTarget(deltaTime, overlapPlayer.GetActor());
-	//else if (ISObstacleDetected())
-	//	AvoidObstacle(deltaTime);
+	else if (IsPlayerDetected(overlapPlayer))
+		ReachTarget(deltaTime, overlapPlayer.GetActor());
+	else if (ISObstacleDetected())
+		AvoidObstacle(deltaTime);
 	else
 		Move(FVector2D(actorForwardDirection), m_maxAcceleration, m_maxSpeed, deltaTime);
 		
@@ -165,15 +165,15 @@ bool ASDTAIController::RayCast(const FVector direction, ObjectType targetedObjec
 	FCollisionObjectQueryParams objectQueryParams;
 
 	FCollisionQueryParams queryParams = FCollisionQueryParams::DefaultQueryParam;
-	if(targetedObject == ObjectType::DeathFloor)
-		objectQueryParams.AddObjectTypesToQuery(COLLISION_DEATH_OBJECT);
-	else if (targetedObject == ObjectType::PickUp)
-	{
-		objectQueryParams.AddObjectTypesToQuery(COLLISION_COLLECTIBLE);
-		objectQueryParams.AddObjectTypesToQuery(ECC_PhysicsBody);
-		objectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
-		objectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
-	}
+
+	objectQueryParams.AddObjectTypesToQuery(COLLISION_DEATH_OBJECT);
+
+	objectQueryParams.AddObjectTypesToQuery(ECC_Pawn);
+	objectQueryParams.AddObjectTypesToQuery(COLLISION_COLLECTIBLE);
+	objectQueryParams.AddObjectTypesToQuery(ECC_PhysicsBody);
+	objectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
+	objectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
+
 
 	queryParams.AddIgnoredActor(GetPawn());
 	queryParams.bReturnPhysicalMaterial = true;

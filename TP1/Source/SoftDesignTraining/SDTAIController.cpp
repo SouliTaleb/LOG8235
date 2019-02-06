@@ -126,7 +126,7 @@ void ASDTAIController::ReachTarget(float deltaTime, AActor* targetActor)
 
 		FVector directionToTarget = (targetLocation - pawnLocation);
 		if(directionToTarget.Size() > 50.f)
-			Move(FVector2D(directionToTarget/*.GetSafeNormal()*/), m_maxAcceleration, m_maxSpeed, deltaTime);
+			Move(FVector2D(directionToTarget.GetSafeNormal()), m_maxAcceleration, m_maxSpeed, deltaTime);
 	}
 }
 
@@ -136,10 +136,11 @@ void ASDTAIController::Move(const FVector2D& direction, float acceleration, floa
 	m_currentSpeed = FMath::Min(maxSpeed, m_currentSpeed + acceleration * deltaTime);
 	FVector const forwardDirection = GetPawn()->GetActorForwardVector();
 	
-	float AimAtAngle = acos(FVector::DotProduct(forwardDirection, FVector(direction, 0.f)));
-	FVector crossProduct = FVector::CrossProduct(forwardDirection.GetSafeNormal(), FVector(direction, 0.f).GetSafeNormal()).GetSafeNormal();
-	if (crossProduct.Z == 1.f)
+	float AimAtAngle = FMath::RadiansToDegrees(acosf(FVector::DotProduct(forwardDirection, FVector(direction, 0.f).GetSafeNormal())));
+	FVector crossProduct = FVector::CrossProduct(forwardDirection, FVector(direction, 0.f).GetSafeNormal()).GetSafeNormal();
+	if (crossProduct.Z == -1.0f)
 		AimAtAngle = -AimAtAngle;
+
 	FRotator NewRotation = FRotator(0, AimAtAngle, 0);
 	pawn->AddActorWorldRotation(NewRotation);
 	pawn->AddMovementInput(FVector(direction, 0.f), m_currentSpeed);

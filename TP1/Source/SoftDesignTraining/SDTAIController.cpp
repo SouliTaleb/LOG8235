@@ -29,13 +29,10 @@ void ASDTAIController::BeginPlay()
 
 void ASDTAIController::Tick(float deltaTime)
 {
-	//IsPlayerDetected(deltaTime);
-
 	FVector const actorForwardDirection = GetPawn()->GetActorForwardVector();
 	struct FHitResult hitResult;
 	FOverlapResult overlapPlayer;
 	FOverlapResult overlapPickUp;
-	//Move(FVector2D(actorForwardDirection), m_maxAcceleration, m_maxSpeed, deltaTime);
 	if (IsPickUpDetected(overlapPickUp))
 		ReachTarget(deltaTime, overlapPickUp.GetActor());
 	else if (IsPlayerDetected(overlapPlayer))
@@ -44,34 +41,6 @@ void ASDTAIController::Tick(float deltaTime)
 		AvoidObstacle(deltaTime);
 	else
 		Move(FVector2D(actorForwardDirection), m_maxAcceleration, m_maxSpeed, deltaTime);
-		
-
-	//switch (m_state)
-	//{
-	//case State::MoveForward:
-	//{
-	//	Move(FVector2D(actorForwardDirection), m_maxAcceleration, m_maxSpeed, deltaTime);
-	//	if (ISObstacleDetected())
-	//		m_state = State::AvoidObstacle;
-	//}
-	//break;
-	//case State::AvoidObstacle:
-	//{
-	//	AvoidObstacle(deltaTime);
-	//	m_state = State::MoveForward;
-	//}
-	//break;
-	//case State::ReachActor:
-	//{
-	//	AActor* actor = nullptr;
-	//	if (IsPlayerDetected(actor))
-	//		ReachTarget(deltaTime, actor);
-	//	else
-	//		m_state = State::MoveForward;
-	//}
-	//break;
-	//default: break;
-	//};
 }
 
 bool ASDTAIController::IsPlayerDetected(FOverlapResult& overlapActor)
@@ -142,44 +111,10 @@ void ASDTAIController::Move(const FVector2D& direction, float acceleration, floa
 		AimAtAngle = -AimAtAngle;
 
 	FRotator NewRotation = FRotator(0, AimAtAngle, 0);
-	pawn->AddActorWorldRotation(NewRotation);
 	pawn->AddMovementInput(FVector(direction, 0.f), m_currentSpeed);
+	pawn->AddActorWorldRotation(NewRotation);
 }
 
-
-/*void ASDTAIController::Move(const FVector2D& direction, float acceleration, float maxSpeed, float deltaTime)
-{
-	APawn* pawn = GetPawn();
-	m_currentSpeed = FMath::Min(maxSpeed, m_currentSpeed + acceleration * deltaTime);
-	FVector const forwardDirection = GetPawn()->GetActorForwardVector();
-
-	float AimAtAngle = acos(FVector::DotProduct(forwardDirection, FVector(direction, 0.f)));
-	FRotator NewRotation = FRotator(0, AimAtAngle, 0);
-	pawn->AddActorWorldRotation(NewRotation);
-	pawn->AddMovementInput(FVector(direction, 0.f), m_currentSpeed);
-}*/
-
-/*
-void ASDTAIController::Move(const FVector2D& direction, float acceleration, float maxSpeed, float deltaTime)
-{
-	APawn* pawn = GetPawn();
-	FVector const pawnPosition(pawn->GetActorLocation());
-	//FVector2D const toTarget = target - FVector2D(pawnPosition);
-	FVector2D const displacement = FMath::Min(direction.Size(), FMath::Min(m_maxSpeed, maxSpeed) * deltaTime) * direction.GetSafeNormal();
-	pawn->SetActorLocation(pawnPosition + FVector(displacement, 0.f), true);
-	pawn->SetActorRotation(FVector(displacement, 0.f).ToOrientationQuat());
-	//return direction.Size() < FMath::Min(m_maxSpeed, direction) * deltaTime;
-}*/
-/*
-void ASDTAIController::Move(const FVector2D& direction, float acceleration, float maxSpeed, float deltaTime)
-{
-	APawn* pawn = GetPawn();
-	FVector const pawnPosition(pawn->GetActorLocation());
-	FVector2D const displacement = FMath::Min(m_maxSpeed, maxSpeed) * deltaTime * direction.GetSafeNormal();
-	pawn->SetActorLocation(pawnPosition + FVector(displacement, 0.f), true);
-	pawn->SetActorRotation(FVector(direction, 0.f).ToOrientationQuat());
-}
-*/
 bool ASDTAIController::RayCast(const FVector direction)
 {
 	UWorld * world = GetWorld();
@@ -308,7 +243,7 @@ bool ASDTAIController::SphereOverlap(const FVector& pos, float radius, TArray<st
 TArray<FOverlapResult> ASDTAIController::CollectTargetActorsInFrontOfCharacter(APawn const* pawn)
 {
 	TArray<FOverlapResult> outResults;
-	SphereOverlap(pawn->GetActorLocation() /*+ pawn->GetActorForwardVector() * 750.0f*/, 1000.0f, outResults, true);
+	SphereOverlap(pawn->GetActorLocation(), 1000.0f, outResults, true);
 	return outResults;
 }
 
@@ -329,5 +264,5 @@ bool ASDTAIController::IsPickUpInFrontOfAIActor(const ASDTCollectible* const pic
 	FVector const toTarget = pickUpActor->GetActorLocation() - GetPawn()->GetActorLocation();
 	FVector const pawnForward = GetPawn()->GetActorForwardVector();
 	bool isPickUpInsideCone = std::abs(std::acos(FVector::DotProduct(pawnForward.GetSafeNormal(), toTarget.GetSafeNormal()))) < m_visionAngle;
-	return  isPickUpInsideCone /* && CanReachTarget(pickUpActor, ObjectType::PickUp)*/;
+	return  isPickUpInsideCone;
 }

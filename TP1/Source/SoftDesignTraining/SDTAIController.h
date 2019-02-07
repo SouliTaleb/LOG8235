@@ -20,14 +20,6 @@ public:
 	virtual void Tick(float deltaTime) override;
 
 protected:
-	enum class State
-	{
-		MoveForward,
-		AvoidObstacle,
-		MoveAndRotate,
-		ReachActor,
-		Stop
-	};
 
 	enum class ObjectType
 	{
@@ -68,7 +60,6 @@ private:
 	float m_currentSpeed = 0.0f;
 	float const m_maxSpeed = 0.4f;
 	float const m_maxAcceleration = 500.0f;
-	State m_state = State::ReachActor;
 	HitObject m_hitObject;
-	float const m_visionAngle = PI / 2.0f;  // Degree angle value
+	float const m_visionAngle = PI / 2.0f;
 };

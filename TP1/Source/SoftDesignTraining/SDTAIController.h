@@ -30,6 +30,13 @@ protected:
 		None
 	};
 
+	enum class PlayerState
+	{
+		Unseen,
+		Vulnarable,
+		PoweredUp
+	};
+
 	struct HitObject
 	{
 		struct FHitResult m_hitInformation;
@@ -48,10 +55,11 @@ private:
 	bool CanReachTarget(const AActor* const targetActor, ObjectType objectType);
 	void DebugDrawPrimitive(const UPrimitiveComponent& primitive);
 	TArray<FOverlapResult> CollectTargetActorsInFrontOfCharacter(APawn const* pawn);
-	bool IsPlayerDetected(FOverlapResult& overlapActor);
+	PlayerState IsPlayerDetected(FOverlapResult& overlapActor);
 	bool IsPickUpDetected(FOverlapResult& overlapActor);
 	bool IsPickUpInFrontOfAIActor(const ASDTCollectible* const pickUpActor);
 	void ReachTarget(float deltaTime, AActor* targetActor);
+	void RunAwayFromPlayer(float deltaTime, AActor* targetActor);
 
 private:
 	FVector2D m_MovementInput;

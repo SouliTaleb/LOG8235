@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "AIController.h"
 #include "SDTCollectible.h"
+#include "SoftDesignTrainingCharacter.h"
 #include "SDTAIController.generated.h"
 
 /**
@@ -52,6 +53,7 @@ private:
 	bool IsPickUpDetected(FOverlapResult& overlapActor);
 	bool IsPickUpInFrontOfAIActor(const ASDTCollectible* const pickUpActor);
 	void ReachTarget(float deltaTime, AActor* targetActor);
+	void OnCollectPowerUp();
 
 private:
 	FVector2D m_MovementInput;
@@ -62,4 +64,5 @@ private:
 	float const m_maxAcceleration = 500.0f;
 	HitObject m_hitObject;
 	float const m_visionAngle = PI / 2.0f;
+	int m_numberOfCollectedPowerUp = 0;
 };

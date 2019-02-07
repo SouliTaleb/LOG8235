@@ -287,3 +287,12 @@ bool ASDTAIController::IsPickUpInFrontOfAIActor(const ASDTCollectible* const pic
 	bool isPickUpInsideCone = std::abs(std::acos(FVector::DotProduct(pawnForward.GetSafeNormal(), toTarget.GetSafeNormal()))) < m_visionAngle;
 	return  isPickUpInsideCone;
 }
+
+void ASDTAIController::OnCollectPowerUp()
+{
+	m_numberOfCollectedPowerUp++;
+
+//	GetMesh()->SetMaterial(0, m_PoweredUpMaterial);
+
+//	GetWorld()->GetTimerManager().SetTimer(m_PowerUpTimer, this, &ASoftDesignTrainingMainCharacter::OnPowerUpDone, m_PowerUpDuration, false);
+}

@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
-
+#include "SDTCollectible.h"
 #include "SDTAIController.generated.h"
 
 /**
@@ -20,43 +20,18 @@ public:
 	virtual void Tick(float deltaTime) override;
 
 protected:
-	enum class State
-	{
-		MoveForward,
-		AvoidObstacle,
-		MoveAndRotate,
-		FollowPlayer,
-		Stop
-	};
 
-	enum class ObstacleType
+	enum class ObjectType
 	{
 		Wall,
-		Slab,
+		DeathFloor,
 		Player,
+		PickUp,
 		None
 	};
 
 	struct HitObject
 	{
-		void ObstacleDetected(FVector obstacleNormal)
-		{
-			m_obstacleNormal = obstacleNormal;
-			m_obstacleAvoided = false;
-		}
-
-		bool AvoidObstacle()
-		{
-			if (!m_obstacleAvoided)
-			{
-				m_obstacleAvoided = true;
-				return true;
-			}
-			return false;
-		}
-
-		bool m_obstacleAvoided = true;
-		FVector m_obstacleNormal;
 		struct FHitResult m_hitInformation;
 		float m_allowedDistanceToHit = 0.0f;
 	};
@@ -64,52 +39,27 @@ protected:
 	void Move(const FVector2D& direction, float acceleration, float maxSpeed, float deltaTime);
 
 private:
-	bool RayCast(const FVector direction, bool isSlabObstacle = false);
+	bool RayCast(const FVector direction);
 	bool AvoidObstacle(const float deltaTime);
 	bool ISObstacleDetected();
-	bool ISCloseToObstacle(const FVector direction, const float allowedDistance, const ObstacleType obstacleType);
-	ObstacleType GetObstacleType() const;
-	bool SphereOverlap(const FVector& pos, float radius, TArray<struct FOverlapResult>& outOverlaps, bool drawdebug);
-	bool CanFollowPlayer(const FVector direction);
+	bool ISCloseToObject(const FVector direction, const float allowedDistance, const ObjectType objectType);
+	ObjectType GetObjectType() const;
+	bool SphereOverlap(const FVector& pos, float radius, TArray<struct FOverlapResult>& outOverlaps, bool drawdebug, bool isForPickUps = false);
+	bool CanReachTarget(const AActor* const targetActor, ObjectType objectType);
 	void DebugDrawPrimitive(const UPrimitiveComponent& primitive);
-<<<<<<< HEAD
 	TArray<FOverlapResult> CollectTargetActorsInFrontOfCharacter(APawn const* pawn);
-=======
->>>>>>> master
-	void SetVisibilityInformation(bool isVisible);
-	bool DetectPlayer(float deltaTime);
-
-	TArray<AActor*> GetVisibleActors();
+	bool IsPlayerDetected(FOverlapResult& overlapActor);
+	bool IsPickUpDetected(FOverlapResult& overlapActor);
+	bool IsPickUpInFrontOfAIActor(const ASDTCollectible* const pickUpActor);
+	void ReachTarget(float deltaTime, AActor* targetActor);
 
 private:
-
-	// Visible, shootable
-	UPROPERTY(EditAnywhere)
-<<<<<<< HEAD
-		class UMaterial* VisibleMaterial;
-
-	// not visible, not shootable
-	UPROPERTY(EditAnywhere)
-		class UMaterial* NonVisibleMaterial;
-=======
-	class UMaterial* VisibleMaterial;
-
-	// not visible, not shootable
-	UPROPERTY(EditAnywhere)
-	class UMaterial* NonVisibleMaterial;
->>>>>>> master
-
 	FVector2D m_MovementInput;
 	FVector2D m_StartingPosition;
 	float m_capsuleRadius;
 	float m_currentSpeed = 0.0f;
 	float const m_maxSpeed = 0.4f;
 	float const m_maxAcceleration = 500.0f;
-	State m_state = State::MoveForward;
 	HitObject m_hitObject;
-	float const m_visionAngle = PI / 3.0f;
-
-	const float VisionRange = 1500.0f;
-
-	const bool DrawDebug = true;
+	float const m_visionAngle = PI / 2.0f;
 };

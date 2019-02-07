@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "AIController.h"
 #include "SDTCollectible.h"
+#include "SoftDesignTrainingCharacter.h"
 #include "SDTAIController.generated.h"
 
 /**
@@ -30,6 +31,13 @@ protected:
 		None
 	};
 
+	enum class PlayerState
+	{
+		Unseen,
+		Vulnarable,
+		PoweredUp
+	};
+
 	struct HitObject
 	{
 		struct FHitResult m_hitInformation;
@@ -39,7 +47,7 @@ protected:
 	void Move(const FVector2D& direction, float acceleration, float maxSpeed, float deltaTime);
 
 private:
-	bool RayCast(const FVector direction);
+	bool RayCast(const FVector direction, const FVector delta);
 	bool AvoidObstacle(const float deltaTime);
 	bool ISObstacleDetected();
 	bool ISCloseToObject(const FVector direction, const float allowedDistance, const ObjectType objectType);
@@ -48,10 +56,12 @@ private:
 	bool CanReachTarget(const AActor* const targetActor, ObjectType objectType);
 	void DebugDrawPrimitive(const UPrimitiveComponent& primitive);
 	TArray<FOverlapResult> CollectTargetActorsInFrontOfCharacter(APawn const* pawn);
-	bool IsPlayerDetected(FOverlapResult& overlapActor);
+	PlayerState IsPlayerDetected(FOverlapResult& overlapActor);
 	bool IsPickUpDetected(FOverlapResult& overlapActor);
 	bool IsPickUpInFrontOfAIActor(const ASDTCollectible* const pickUpActor);
 	void ReachTarget(float deltaTime, AActor* targetActor);
+	void RunAwayFromPlayer(float deltaTime, AActor* targetActor);
+	void OnCollectPowerUp();
 
 private:
 	FVector2D m_MovementInput;
@@ -62,4 +72,5 @@ private:
 	float const m_maxAcceleration = 500.0f;
 	HitObject m_hitObject;
 	float const m_visionAngle = PI / 2.0f;
+	int m_numberOfCollectedPowerUp = 0;
 };

@@ -72,19 +72,32 @@ private:
 	bool SphereOverlap(const FVector& pos, float radius, TArray<struct FOverlapResult>& outOverlaps, bool drawdebug);
 	bool CanFollowPlayer(const FVector direction);
 	void DebugDrawPrimitive(const UPrimitiveComponent& primitive);
+<<<<<<< HEAD
 	TArray<FOverlapResult> CollectTargetActorsInFrontOfCharacter(APawn const* pawn);
+=======
+>>>>>>> master
 	void SetVisibilityInformation(bool isVisible);
 	bool DetectPlayer(float deltaTime);
+
+	TArray<AActor*> GetVisibleActors();
 
 private:
 
 	// Visible, shootable
 	UPROPERTY(EditAnywhere)
+<<<<<<< HEAD
 		class UMaterial* VisibleMaterial;
 
 	// not visible, not shootable
 	UPROPERTY(EditAnywhere)
 		class UMaterial* NonVisibleMaterial;
+=======
+	class UMaterial* VisibleMaterial;
+
+	// not visible, not shootable
+	UPROPERTY(EditAnywhere)
+	class UMaterial* NonVisibleMaterial;
+>>>>>>> master
 
 	FVector2D m_MovementInput;
 	FVector2D m_StartingPosition;
@@ -95,4 +108,8 @@ private:
 	State m_state = State::MoveForward;
 	HitObject m_hitObject;
 	float const m_visionAngle = PI / 3.0f;
+
+	const float VisionRange = 1500.0f;
+
+	const bool DrawDebug = true;
 };

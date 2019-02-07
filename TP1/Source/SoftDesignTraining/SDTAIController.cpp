@@ -33,10 +33,11 @@ void ASDTAIController::Tick(float deltaTime)
 	struct FHitResult hitResult;
 	FOverlapResult overlapPlayer;
 	FOverlapResult overlapPickUp;
-	if (IsPickUpDetected(overlapPickUp))
-		ReachTarget(deltaTime, overlapPickUp.GetActor());
-	else if (IsPlayerDetected(overlapPlayer))
+	
+	if (IsPlayerDetected(overlapPlayer))
 		ReachTarget(deltaTime, overlapPlayer.GetActor());
+	else if (IsPickUpDetected(overlapPickUp))
+		ReachTarget(deltaTime, overlapPickUp.GetActor());
 	else if (ISObstacleDetected())
 		AvoidObstacle(deltaTime);
 	else
@@ -153,7 +154,7 @@ bool ASDTAIController::AvoidObstacle(const float deltaTime)
 	if (distanceToImpactPoint <= m_hitObject.m_allowedDistanceToHit)
 	{
 		FVector2D const newActorDirection = FVector2D(FVector::CrossProduct(FVector::UpVector, m_hitObject.m_hitInformation.ImpactNormal));
-		Move(newActorDirection, m_maxAcceleration, m_maxSpeed / 2.0f, deltaTime);
+		Move(newActorDirection, m_maxAcceleration, m_maxSpeed / 5.0f, deltaTime);
 	}
 	return true;
 }
@@ -176,7 +177,7 @@ bool ASDTAIController::ISObstacleDetected()
 {
 	const FVector forwardVectorDirection = GetPawn()->GetActorForwardVector();
 	FVector floorDirection = forwardVectorDirection;
-	floorDirection.Z= -1.f;
+	floorDirection.Z= -0.4f;
 	floorDirection.Normalize();
 	return ISCloseToObject(floorDirection, 700.f, ObjectType::DeathFloor) ||
 		ISCloseToObject(forwardVectorDirection, 300.f, ObjectType::Wall);

@@ -54,7 +54,7 @@ bool ASDTAIController::IsPlayerDetected(FOverlapResult& overlapActor)
 		if (playerActor != nullptr)
 		{
 			overlapActor = overlapResult;
-			return CanReachTarget(playerActor, ObjectType::Player);
+			return !playerActor->IsPoweredUp() && CanReachTarget(playerActor, ObjectType::Player);
 		}
 	}
 	return false;

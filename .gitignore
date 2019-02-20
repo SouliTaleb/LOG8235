@@ -11,12 +11,6 @@ TP1/Intermediate/
 
 TP1/Saved/
 
-*.sln
-
-*.uproject
-
-*.cs
-
 TP1/Source/SoftDesignTraining/SDTUtils\.cpp
 
 TP1/Source/SoftDesignTraining/SDTUtils\.h

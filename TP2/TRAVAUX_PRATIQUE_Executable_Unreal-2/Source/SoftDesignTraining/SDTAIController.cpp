@@ -19,6 +19,13 @@ ASDTAIController::ASDTAIController(const FObjectInitializer& ObjectInitializer)
 void ASDTAIController::GoToBestTarget(float deltaTime)
 {
     //Move to target depending on current behavior
+	TArray<AActor*> collectibles;
+
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASDTCollectible::StaticClass(), collectibles);
+
+	int index = FMath::RandRange(0, collectibles.Num() - 1);
+
+	MoveToActor(collectibles[index]);
 }
 
 void ASDTAIController::OnMoveToTarget()

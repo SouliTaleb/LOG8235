@@ -1,4 +1,10 @@
 
+*.cs
+
+*.sln
+
+*.uproject
+
 TP1/Binaries/
 
 TP1/Build/
@@ -10,12 +16,6 @@ TP1/Content/
 TP1/Intermediate/
 
 TP1/Saved/
-
-*.sln
-
-*.uproject
-
-*.cs
 
 TP1/Source/SoftDesignTraining/SDTUtils\.cpp
 

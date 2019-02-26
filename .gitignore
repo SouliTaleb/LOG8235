@@ -1,4 +1,10 @@
 
+*.cs
+
+*.sln
+
+*.uproject
+
 TP1/Binaries/
 
 TP1/Build/

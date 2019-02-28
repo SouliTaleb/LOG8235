@@ -10,24 +10,27 @@
 #include "UnrealMathUtility.h"
 #include "SDTUtils.h"
 #include "EngineUtils.h"
+#include "SoftDesignTrainingMainCharacter.h"
 
 ASDTAIController::ASDTAIController(const FObjectInitializer& ObjectInitializer)
-    : Super(ObjectInitializer.SetDefaultSubobjectClass<USDTPathFollowingComponent>(TEXT("PathFollowingComponent"))),
-	  m_maxSpeed(0.4f),
-	  m_currentSpeed(0.0f),
-	  m_maxAcceleration(500.0f)
+	: Super(ObjectInitializer.SetDefaultSubobjectClass<USDTPathFollowingComponent>(TEXT("PathFollowingComponent"))),
+	m_collectible_pos(FVector::ZeroVector),
+	m_player_pos(FVector::ZeroVector),
+	m_currentAgentState(AgentState::None)
 {
 }
 
 void ASDTAIController::GoToBestTarget(float deltaTime)
 {
     //Move to target depending on current behavior
-	TArray<AActor*> collectibles;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASDTCollectible::StaticClass(), collectibles);
-	int index = FMath::RandRange(0, collectibles.Num() - 1);
-	//MoveToActor(collectibles[index]);
-	if(collectibles[index]->GetFName().ToString().StartsWith("BP_SDTCollectible11"))
-		MoveToLocation(collectibles[index]->GetActorLocation());
+	if (m_currentAgentState == AgentState::PlayerSeen)
+	{
+		MoveToLocation(m_player_pos);
+	}
+	else if (m_currentAgentState == AgentState::RandomCollectibleSeen)
+	{
+		MoveToLocation(m_collectible_pos);
+	}
 }
 
 void ASDTAIController::OnMoveToTarget()
@@ -80,7 +83,29 @@ void ASDTAIController::UpdatePlayerInteraction(float deltaTime)
     GetHightestPriorityDetectionHit(allDetectionHits, detectionHit);
 
     //Set behavior based on hit
+	ASoftDesignTrainingMainCharacter* playerActor = dynamic_cast<ASoftDesignTrainingMainCharacter*>(detectionHit.GetActor());
+	if (playerActor != nullptr)
+	{
+		m_currentAgentState = AgentState::PlayerSeen;
+		m_player_pos = detectionHit.GetActor()->GetActorLocation();
+	}
+	TArray<AActor*> collectibles;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASDTCollectible::StaticClass(), collectibles);
+	int index = 0;
+	ASDTCollectible* collectible = nullptr;
+	do 
+	{
+		index = FMath::RandRange(0, collectibles.Num() - 1);
+		collectible = dynamic_cast<ASDTCollectible*>(collectibles[index]);
+	} while (collectible->IsOnCooldown());
 
+	FVector pawnLocation = GetPawn()->GetActorLocation();
+	if ((m_collectible_pos == FVector::ZeroVector) || ((pawnLocation - m_collectible_pos).Size() < 50.f))
+	{
+		m_currentAgentState = AgentState::RandomCollectibleSeen;
+		m_collectible_pos = collectibles[index]->GetActorLocation();
+	}
+	
     DrawDebugCapsule(GetWorld(), detectionStartLocation + m_DetectionCapsuleHalfLength * selfPawn->GetActorForwardVector(), m_DetectionCapsuleHalfLength, m_DetectionCapsuleRadius, selfPawn->GetActorQuat() * selfPawn->GetActorUpVector().ToOrientationQuat(), FColor::Blue);
 }
 
@@ -98,7 +123,9 @@ void ASDTAIController::GetHightestPriorityDetectionHit(const TArray<FHitResult>&
             }
             else if (component->GetCollisionObjectType() == COLLISION_COLLECTIBLE)
             {
-                outDetectionHit = hit;
+				ASDTCollectible* collectible = dynamic_cast<ASDTCollectible*>(hit.GetActor());
+				if(!collectible->IsOnCooldown())
+					outDetectionHit = hit;
             }
         }
     }
@@ -108,31 +135,4 @@ void ASDTAIController::AIStateInterrupted()
 {
     StopMovement();
     m_ReachedTarget = true;
-}
-
-void ASDTAIController::ReachTarget(float deltaTime, AActor* targetActor)
-{
-	if (targetActor != nullptr)
-	{
-		const FVector targetLocation = targetActor->GetActorLocation();
-		const FVector pawnLocation = GetPawn()->GetActorLocation();
-		FVector directionToTarget = (targetLocation - pawnLocation);
-		if (directionToTarget.Size() > 50.f)
-			Move(FVector2D(directionToTarget.GetSafeNormal()), m_maxAcceleration, m_maxSpeed, deltaTime);
-	}
-}
-
-void ASDTAIController::Move(const FVector2D& direction, float acceleration, float maxSpeed, float deltaTime)
-{
-	APawn* pawn = GetPawn();
-	m_currentSpeed = FMath::Min(m_maxSpeed, m_currentSpeed + acceleration * deltaTime);
-	FVector const forwardDirection = GetPawn()->GetActorForwardVector();
-
-	float AimAtAngle = FMath::RadiansToDegrees(acosf(FVector::DotProduct(forwardDirection, FVector(direction, 0.f).GetSafeNormal())));
-	FVector crossProduct = FVector::CrossProduct(forwardDirection, FVector(direction, 0.f).GetSafeNormal()).GetSafeNormal();
-	if (crossProduct.Z == -1.0f)
-		AimAtAngle = -AimAtAngle;
-
-	pawn->AddMovementInput(FVector(direction, 0.f), m_currentSpeed);
-	pawn->SetActorRotation(FMath::Lerp(pawn->GetActorRotation(), FVector(direction, 0.f).Rotation(), 0.1f));
 }

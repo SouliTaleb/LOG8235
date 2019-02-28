@@ -49,6 +49,15 @@ public:
     void AIStateInterrupted();
 
 protected:
+
+	enum class AgentState : uint8
+	{
+		PlayerSeen,
+		LastPlayerPositionSeen,
+		RandomCollectibleSeen,
+		None
+	};
+
     void OnMoveToTarget();
     void GetHightestPriorityDetectionHit(const TArray<FHitResult>& hits, FHitResult& outDetectionHit);
     void UpdatePlayerInteraction(float deltaTime);
@@ -57,4 +66,9 @@ private:
     virtual void GoToBestTarget(float deltaTime) override;
     virtual void ChooseBehavior(float deltaTime) override;
     virtual void ShowNavigationPath() override;
+
+private:
+	AgentState m_currentAgentState;
+	FVector   m_player_pos;
+	FVector   m_collectible_pos;
 };

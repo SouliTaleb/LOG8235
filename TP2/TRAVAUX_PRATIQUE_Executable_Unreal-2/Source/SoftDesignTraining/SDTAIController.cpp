@@ -10,21 +10,27 @@
 #include "UnrealMathUtility.h"
 #include "SDTUtils.h"
 #include "EngineUtils.h"
+#include "SoftDesignTrainingMainCharacter.h"
 
 ASDTAIController::ASDTAIController(const FObjectInitializer& ObjectInitializer)
-    : Super(ObjectInitializer.SetDefaultSubobjectClass<USDTPathFollowingComponent>(TEXT("PathFollowingComponent")))
+	: Super(ObjectInitializer.SetDefaultSubobjectClass<USDTPathFollowingComponent>(TEXT("PathFollowingComponent"))),
+	m_collectible_pos(FVector::ZeroVector),
+	m_player_pos(FVector::ZeroVector),
+	m_currentAgentState(AgentState::None)
 {
 }
 
 void ASDTAIController::GoToBestTarget(float deltaTime)
 {
     //Move to target depending on current behavior
-	TArray<AActor*> collectibles;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASDTCollectible::StaticClass(), collectibles);
-	int index = FMath::RandRange(0, collectibles.Num() - 1);
-	//MoveToActor(collectibles[index]);
-	if(collectibles[index]->GetFName().ToString().StartsWith("BP_SDTCollectible11"))
-		MoveToLocation(collectibles[index]->GetActorLocation());
+	if (m_currentAgentState == AgentState::PlayerSeen)
+	{
+		MoveToLocation(m_player_pos);
+	}
+	else if (m_currentAgentState == AgentState::RandomCollectibleSeen)
+	{
+		MoveToLocation(m_collectible_pos);
+	}
 }
 
 void ASDTAIController::OnMoveToTarget()
@@ -77,7 +83,31 @@ void ASDTAIController::UpdatePlayerInteraction(float deltaTime)
     GetHightestPriorityDetectionHit(allDetectionHits, detectionHit);
 
     //Set behavior based on hit
+	ASoftDesignTrainingMainCharacter* playerActor = dynamic_cast<ASoftDesignTrainingMainCharacter*>(detectionHit.GetActor());
+	if (playerActor != nullptr)
+	{
+		m_currentAgentState = AgentState::PlayerSeen;
+		m_player_pos = detectionHit.GetActor()->GetActorLocation();
+		DrawDebugCapsule(GetWorld(), detectionStartLocation + m_DetectionCapsuleHalfLength * selfPawn->GetActorForwardVector(), m_DetectionCapsuleHalfLength, m_DetectionCapsuleRadius, selfPawn->GetActorQuat() * selfPawn->GetActorUpVector().ToOrientationQuat(), FColor::Blue);
+		return;
+	}
+	TArray<AActor*> collectibles;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASDTCollectible::StaticClass(), collectibles);
+	int index = 0;
+	ASDTCollectible* collectible = nullptr;
+	do 
+	{
+		index = FMath::RandRange(0, collectibles.Num() - 1);
+		collectible = dynamic_cast<ASDTCollectible*>(collectibles[index]);
+	} while (collectible->IsOnCooldown());
 
+	FVector pawnLocation = GetPawn()->GetActorLocation();
+	if ((m_collectible_pos == FVector::ZeroVector) || ((pawnLocation - m_collectible_pos).Size() < 50.f))
+	{
+		m_currentAgentState = AgentState::RandomCollectibleSeen;
+		m_collectible_pos = collectibles[index]->GetActorLocation();
+	}
+	
     DrawDebugCapsule(GetWorld(), detectionStartLocation + m_DetectionCapsuleHalfLength * selfPawn->GetActorForwardVector(), m_DetectionCapsuleHalfLength, m_DetectionCapsuleRadius, selfPawn->GetActorQuat() * selfPawn->GetActorUpVector().ToOrientationQuat(), FColor::Blue);
 }
 
@@ -95,7 +125,9 @@ void ASDTAIController::GetHightestPriorityDetectionHit(const TArray<FHitResult>&
             }
             else if (component->GetCollisionObjectType() == COLLISION_COLLECTIBLE)
             {
-                outDetectionHit = hit;
+				ASDTCollectible* collectible = dynamic_cast<ASDTCollectible*>(hit.GetActor());
+				if(!collectible->IsOnCooldown())
+					outDetectionHit = hit;
             }
         }
     }

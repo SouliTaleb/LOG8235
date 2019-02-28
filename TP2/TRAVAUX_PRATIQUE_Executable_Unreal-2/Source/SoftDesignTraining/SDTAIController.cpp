@@ -20,12 +20,11 @@ void ASDTAIController::GoToBestTarget(float deltaTime)
 {
     //Move to target depending on current behavior
 	TArray<AActor*> collectibles;
-
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASDTCollectible::StaticClass(), collectibles);
-
 	int index = FMath::RandRange(0, collectibles.Num() - 1);
-
-	MoveToActor(collectibles[index]);
+	//MoveToActor(collectibles[index]);
+	if(collectibles[index]->GetFName().ToString().StartsWith("BP_SDTCollectible11"))
+		MoveToLocation(collectibles[index]->GetActorLocation());
 }
 
 void ASDTAIController::OnMoveToTarget()

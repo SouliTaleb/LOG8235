@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "SDTBaseAIController.h"
+#include "SDTCollectible.h"
 #include "SDTAIController.generated.h"
 
 /**
@@ -69,6 +70,6 @@ private:
 
 private:
 	AgentState m_currentAgentState;
-	FVector   m_player_pos;
-	FVector   m_collectible_pos;
+	FVector m_player_pos;
+	ASDTCollectible* m_collectible;
 };

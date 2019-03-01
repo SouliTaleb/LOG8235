@@ -2,7 +2,6 @@
 
 #include "SoftDesignTraining.h"
 #include "SDTAIController.h"
-#include "SDTCollectible.h"
 #include "SDTFleeLocation.h"
 #include "SDTPathFollowingComponent.h"
 #include "DrawDebugHelpers.h"
@@ -14,7 +13,7 @@
 
 ASDTAIController::ASDTAIController(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer.SetDefaultSubobjectClass<USDTPathFollowingComponent>(TEXT("PathFollowingComponent"))),
-	m_collectible_pos(FVector::ZeroVector),
+	m_collectible(nullptr),
 	m_player_pos(FVector::ZeroVector),
 	m_currentAgentState(AgentState::None)
 {
@@ -26,10 +25,12 @@ void ASDTAIController::GoToBestTarget(float deltaTime)
 	if (m_currentAgentState == AgentState::PlayerSeen)
 	{
 		MoveToLocation(m_player_pos);
+		if ((GetPawn()->GetActorLocation() - m_player_pos).Size() <= 50.f)
+			m_collectible = nullptr;
 	}
 	else if (m_currentAgentState == AgentState::RandomCollectibleSeen)
 	{
-		MoveToLocation(m_collectible_pos);
+		MoveToLocation(m_collectible->GetActorLocation());
 	}
 }
 
@@ -88,22 +89,23 @@ void ASDTAIController::UpdatePlayerInteraction(float deltaTime)
 	{
 		m_currentAgentState = AgentState::PlayerSeen;
 		m_player_pos = detectionHit.GetActor()->GetActorLocation();
+		DrawDebugCapsule(GetWorld(), detectionStartLocation + m_DetectionCapsuleHalfLength * selfPawn->GetActorForwardVector(), m_DetectionCapsuleHalfLength, m_DetectionCapsuleRadius, selfPawn->GetActorQuat() * selfPawn->GetActorUpVector().ToOrientationQuat(), FColor::Blue);
+		return;
 	}
 	TArray<AActor*> collectibles;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASDTCollectible::StaticClass(), collectibles);
-	int index = 0;
+	int randomIndex = 0;
 	ASDTCollectible* collectible = nullptr;
 	do 
 	{
-		index = FMath::RandRange(0, collectibles.Num() - 1);
-		collectible = dynamic_cast<ASDTCollectible*>(collectibles[index]);
+		randomIndex = FMath::RandRange(0, collectibles.Num() - 1);
+		collectible = dynamic_cast<ASDTCollectible*>(collectibles[randomIndex]);
 	} while (collectible->IsOnCooldown());
 
-	FVector pawnLocation = GetPawn()->GetActorLocation();
-	if ((m_collectible_pos == FVector::ZeroVector) || ((pawnLocation - m_collectible_pos).Size() < 50.f))
+	if ((m_collectible == nullptr) || m_collectible->IsOnCooldown() || ((GetPawn()->GetActorLocation() - m_collectible->GetActorLocation()).Size() < 50.f))
 	{
 		m_currentAgentState = AgentState::RandomCollectibleSeen;
-		m_collectible_pos = collectibles[index]->GetActorLocation();
+		m_collectible = collectible;
 	}
 	
     DrawDebugCapsule(GetWorld(), detectionStartLocation + m_DetectionCapsuleHalfLength * selfPawn->GetActorForwardVector(), m_DetectionCapsuleHalfLength, m_DetectionCapsuleRadius, selfPawn->GetActorQuat() * selfPawn->GetActorUpVector().ToOrientationQuat(), FColor::Blue);

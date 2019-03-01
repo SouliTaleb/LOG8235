@@ -53,9 +53,9 @@ protected:
 
 	enum class AgentState : uint8
 	{
-		PlayerSeen,
-		LastPlayerPositionSeen,
-		RandomCollectibleSeen,
+		ReachPlayerPosition,
+		ReachFleePoint,
+		ReachCollectible,
 		None
 	};
 
@@ -71,5 +71,6 @@ private:
 private:
 	AgentState m_currentAgentState;
 	FVector m_player_pos;
+	FVector m_flee_point_pos;
 	ASDTCollectible* m_collectible;
 };

@@ -15,6 +15,7 @@ ASDTAIController::ASDTAIController(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer.SetDefaultSubobjectClass<USDTPathFollowingComponent>(TEXT("PathFollowingComponent"))),
 	m_collectible(nullptr),
 	m_player_pos(FVector::ZeroVector),
+	m_flee_point_pos(FVector::ZeroVector),
 	m_currentAgentState(AgentState::None)
 {
 }
@@ -22,19 +23,26 @@ ASDTAIController::ASDTAIController(const FObjectInitializer& ObjectInitializer)
 void ASDTAIController::GoToBestTarget(float deltaTime)
 {
     //Move to target depending on current behavior
-	if (m_currentAgentState == AgentState::PlayerSeen)
+	if (m_currentAgentState == AgentState::ReachPlayerPosition)
 	{
 		MoveToLocation(m_player_pos);
-		if ((GetPawn()->GetActorLocation() - m_player_pos).Size() < 50.f)
+		if ((GetPawn()->GetActorLocation() - m_player_pos).Size() <= 60.f)
 		{
 			m_player_pos = FVector::ZeroVector;
 			m_collectible = nullptr;
 		}
 	}
-	else if (m_currentAgentState == AgentState::RandomCollectibleSeen)
+	else if (m_currentAgentState == AgentState::ReachFleePoint)
 	{
-		MoveToLocation(m_collectible->GetActorLocation());
+		MoveToLocation(m_flee_point_pos);
+		if ((GetPawn()->GetActorLocation() - m_flee_point_pos).Size() <= 200.f)
+		{
+			m_player_pos = FVector::ZeroVector;
+			m_collectible = nullptr;
+		}
 	}
+	else if (m_currentAgentState == AgentState::ReachCollectible)
+		MoveToLocation(m_collectible->GetActorLocation());
 }
 
 void ASDTAIController::OnMoveToTarget()
@@ -90,27 +98,46 @@ void ASDTAIController::UpdatePlayerInteraction(float deltaTime)
 	ASoftDesignTrainingMainCharacter* playerActor = dynamic_cast<ASoftDesignTrainingMainCharacter*>(detectionHit.GetActor());
 	if (playerActor != nullptr)
 	{
-		m_currentAgentState = AgentState::PlayerSeen;
 		m_player_pos = detectionHit.GetActor()->GetActorLocation();
-		DrawDebugCapsule(GetWorld(), detectionStartLocation + m_DetectionCapsuleHalfLength * selfPawn->GetActorForwardVector(), m_DetectionCapsuleHalfLength, m_DetectionCapsuleRadius, selfPawn->GetActorQuat() * selfPawn->GetActorUpVector().ToOrientationQuat(), FColor::Blue);
-		return;
+		if(!playerActor->IsPoweredUp())
+			m_currentAgentState = AgentState::ReachPlayerPosition;
+		else
+		{
+			TArray<AActor*> fleePoints;
+			UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASDTFleeLocation::StaticClass(), fleePoints);
+			ASDTFleeLocation* pertinentFleeLocation = nullptr;
+			for (AActor* fleeActor : fleePoints)
+			{
+				if ((pertinentFleeLocation == nullptr) || ((m_player_pos - fleeActor->GetActorLocation()).Size() > (m_player_pos - pertinentFleeLocation->GetActorLocation()).Size()))
+				{
+					pertinentFleeLocation = dynamic_cast<ASDTFleeLocation*>(fleeActor);
+				}
+			}
+			if (pertinentFleeLocation != nullptr)
+			{
+				m_flee_point_pos = pertinentFleeLocation->GetActorLocation();
+				m_currentAgentState = AgentState::ReachFleePoint;
+			}				
+		}
 	}
-	TArray<AActor*> collectibles;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASDTCollectible::StaticClass(), collectibles);
-	int randomIndex = 0;
-	ASDTCollectible* collectible = nullptr;
-	do 
+	else
 	{
-		randomIndex = FMath::RandRange(0, collectibles.Num() - 1);
-		collectible = dynamic_cast<ASDTCollectible*>(collectibles[randomIndex]);
-	} while (collectible->IsOnCooldown());
+		TArray<AActor*> collectibles;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASDTCollectible::StaticClass(), collectibles);
+		int randomIndex = 0;
+		ASDTCollectible* collectible = nullptr;
+		do
+		{
+			randomIndex = FMath::RandRange(0, collectibles.Num() - 1);
+			collectible = dynamic_cast<ASDTCollectible*>(collectibles[randomIndex]);
+		} while (collectible->IsOnCooldown());
 
-	if ((m_player_pos == FVector::ZeroVector) && ((m_collectible == nullptr) || m_collectible->IsOnCooldown() || ((GetPawn()->GetActorLocation() - m_collectible->GetActorLocation()).Size() < 50.f)))
-	{
-		m_currentAgentState = AgentState::RandomCollectibleSeen;
-		m_collectible = collectible;
+		if ((m_player_pos == FVector::ZeroVector) && ((m_collectible == nullptr) || m_collectible->IsOnCooldown() || ((GetPawn()->GetActorLocation() - m_collectible->GetActorLocation()).Size() < 50.f)))
+		{
+			m_currentAgentState = AgentState::ReachCollectible;
+			m_collectible = collectible;
+		}
 	}
-	
     DrawDebugCapsule(GetWorld(), detectionStartLocation + m_DetectionCapsuleHalfLength * selfPawn->GetActorForwardVector(), m_DetectionCapsuleHalfLength, m_DetectionCapsuleRadius, selfPawn->GetActorQuat() * selfPawn->GetActorUpVector().ToOrientationQuat(), FColor::Blue);
 }
 

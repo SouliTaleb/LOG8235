@@ -11,6 +11,7 @@
 #include "EngineUtils.h"
 #include "SoftDesignTrainingMainCharacter.h"
 
+
 ASDTAIController::ASDTAIController(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer.SetDefaultSubobjectClass<USDTPathFollowingComponent>(TEXT("PathFollowingComponent"))),
 	m_collectible(nullptr),
@@ -22,9 +23,12 @@ ASDTAIController::ASDTAIController(const FObjectInitializer& ObjectInitializer)
 
 void ASDTAIController::GoToBestTarget(float deltaTime)
 {
+	ACharacter* character =  dynamic_cast<ACharacter*>(GetPawn());
     //Move to target depending on current behavior
 	if (m_currentAgentState == AgentState::ReachPlayerPosition)
-	{
+	{		
+		m_runSpeed = 600;
+		character->GetCharacterMovement()->MaxWalkSpeed = m_runSpeed;
 		MoveToLocation(m_player_pos);
 		if ((GetPawn()->GetActorLocation() - m_player_pos).Size() <= 60.f)
 		{
@@ -34,6 +38,8 @@ void ASDTAIController::GoToBestTarget(float deltaTime)
 	}
 	else if (m_currentAgentState == AgentState::ReachFleePoint)
 	{
+		m_runSpeed = 600;
+		character->GetCharacterMovement()->MaxWalkSpeed = m_runSpeed;
 		MoveToLocation(m_flee_point_pos);
 		if ((GetPawn()->GetActorLocation() - m_flee_point_pos).Size() <= 200.f)
 		{
@@ -42,7 +48,13 @@ void ASDTAIController::GoToBestTarget(float deltaTime)
 		}
 	}
 	else if (m_currentAgentState == AgentState::ReachCollectible)
+	{
+		m_runSpeed = 200;
+		character->GetCharacterMovement()->MaxWalkSpeed = m_runSpeed;
 		MoveToLocation(m_collectible->GetActorLocation());
+	}
+	if(GetPathFollowingComponent()->GetPath().IsValid())
+		ShowNavigationPath();
 }
 
 void ASDTAIController::OnMoveToTarget()
@@ -60,6 +72,15 @@ void ASDTAIController::OnMoveCompleted(FAIRequestID RequestID, const FPathFollow
 void ASDTAIController::ShowNavigationPath()
 {
     //Show current navigation path DrawDebugLine and DrawDebugSphere
+	const TArray<FNavPathPoint>& navPoints = GetPathFollowingComponent()->GetPath()->GetPathPoints();
+	FNavPathPoint precedentNavPathPoint;
+	for (FNavPathPoint navPathPoint : navPoints)
+	{
+		DrawDebugSphere(GetWorld(), navPathPoint.Location, 50.f, 24, FColor::Purple);
+		if (precedentNavPathPoint.HasNodeRef() && sizeof(navPoints) > 1)
+			DrawDebugLine(GetWorld(), precedentNavPathPoint.Location, navPathPoint.Location, FColor::Purple);
+		precedentNavPathPoint = navPathPoint;
+	}
 }
 
 void ASDTAIController::ChooseBehavior(float deltaTime)

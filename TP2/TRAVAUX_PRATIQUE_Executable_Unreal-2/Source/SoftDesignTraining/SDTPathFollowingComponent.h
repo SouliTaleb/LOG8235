@@ -19,6 +19,8 @@ protected:
 	UPROPERTY(transient)
 		class UCharacterMovementComponent* CharacterMoveComp;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AI)
+		bool m_isJumping;
 public:
     virtual void FollowPathSegment(float deltaTime) override;
     virtual void SetMoveSegment(int32 segmentStartIndex) override;

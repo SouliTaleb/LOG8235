@@ -27,18 +27,19 @@ void ASDTAIController::GoToBestTarget(float deltaTime)
     //Move to target depending on current behavior
 	if (m_currentAgentState == AgentState::ReachPlayerPosition)
 	{		
-		m_runSpeed = 600;
+		m_runSpeed = 200;
 		character->GetCharacterMovement()->MaxWalkSpeed = m_runSpeed;
 		MoveToLocation(m_player_pos);
 		if ((GetPawn()->GetActorLocation() - m_player_pos).Size() <= 60.f)
 		{
 			m_player_pos = FVector::ZeroVector;
 			m_collectible = nullptr;
+			m_runSpeed = 0.f;
 		}
 	}
 	else if (m_currentAgentState == AgentState::ReachFleePoint)
 	{
-		m_runSpeed = 600;
+		m_runSpeed = 200;
 		character->GetCharacterMovement()->MaxWalkSpeed = m_runSpeed;
 		MoveToLocation(m_flee_point_pos);
 		if ((GetPawn()->GetActorLocation() - m_flee_point_pos).Size() <= 200.f)

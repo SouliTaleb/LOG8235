@@ -34,7 +34,7 @@ public:
     UCurveFloat* JumpCurve;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AI)
-    float JumpApexHeight = 300.f;
+    float JumpApexHeight = 1000.f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AI)
     float JumpSpeed = 1.f;
@@ -49,7 +49,7 @@ public:
     bool Landing = false;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AI)
-		float m_runSpeed;
+	float m_runSpeed;
 
 public:
     virtual void OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result) override;

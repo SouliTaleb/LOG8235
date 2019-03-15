@@ -34,13 +34,16 @@ public:
     UCurveFloat* JumpCurve;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AI)
-    float JumpApexHeight = 1000.f;
+    float JumpApexHeight = 300.f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AI)
-    float JumpSpeed = 1.f;
+    float JumpSpeed = 200.f;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AI)
     bool AtJumpSegment = false;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AI)
+	bool isStartJumping = false;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AI)
     bool InAir = false;

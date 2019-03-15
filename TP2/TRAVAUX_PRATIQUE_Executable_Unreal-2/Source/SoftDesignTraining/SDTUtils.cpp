@@ -5,6 +5,7 @@
 #include "SoftDesignTrainingMainCharacter.h"
 #include "DrawDebugHelpers.h"
 #include "Engine/World.h"
+#include <cmath>
 
 /*static*/ bool SDTUtils::Raycast(UWorld* uWorld, FVector sourcePoint, FVector targetPoint)
 {
@@ -29,4 +30,11 @@ bool SDTUtils::IsPlayerPoweredUp(UWorld * uWorld)
         return false;
 
     return castedPlayerCharacter->IsPoweredUp();
+}
+
+bool SDTUtils::IsInTargetDirection(APawn * pawn, FVector targetLocation)
+{
+	FVector const toTarget = targetLocation - pawn->GetActorLocation();
+	FVector const pawnForward = pawn->GetActorForwardVector();
+	return std::abs(std::acos(FVector::DotProduct(pawnForward.GetSafeNormal(), toTarget.GetSafeNormal()))) <= 0.25 ;
 }

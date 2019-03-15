@@ -15,59 +15,64 @@ USDTPathFollowingComponent::USDTPathFollowingComponent(const FObjectInitializer&
 
 void USDTPathFollowingComponent::FollowPathSegment(float DeltaTime)
 {
-
 	const TArray<FNavPathPoint>& points = Path->GetPathPoints();
-	if (!m_isJumping) 
+	if (!m_isInJumpingState)
 	{
 		segmentStart = points[MoveSegmentStartIndex];
-		segmentEnd = points[MoveSegmentStartIndex + 1];
+		if(points.Num() > MoveSegmentStartIndex + 1)
+			segmentEnd = points[MoveSegmentStartIndex + 1];
+		lastCurveTime = 0;
 	}
 	ASDTAIController* controller = dynamic_cast<ASDTAIController*>(GetOwner());
-
 	FVector startPoint = segmentStart.Location;
-	FVector endPoint = points[MoveSegmentStartIndex + 1].Location;
-	FVector const pawnPosition(controller->GetPawn()->GetActorLocation());
-	FVector2D const toTarget = FVector2D(endPoint) - FVector2D(startPoint);
-	//FVector2D const displacement = 200.0f * DeltaTime * toTarget.GetSafeNormal();
-
-    if (SDTUtils::HasJumpFlag(segmentStart) || m_isJumping)
-    {
-		if (!controller->InAir)
-		{
-			lastCurveTime = 0;
-			controller->InAir = true;
-		}
+	FVector endPoint = segmentEnd.Location;
 	
-		m_isJumping = true;
-		UCurveFloat* JumpCurve = controller->JumpCurve;
-		float value = JumpCurve->GetFloatValue(lastCurveTime + DeltaTime);
-		lastCurveTime = lastCurveTime + DeltaTime;
-		if (value <= 0.19)
+    if (SDTUtils::HasJumpFlag(segmentStart) || m_isInJumpingState)
+    {	
+		controller->AtJumpSegment = true;
+
+		FVector pawnPosition = controller->GetPawn()->GetActorLocation();
+		FVector2D const toTarget = FVector2D(endPoint - pawnPosition);
+		if (!SDTUtils::IsInTargetDirection(controller->GetPawn(), endPoint) && !controller->isStartJumping)
 		{
-			m_isJumping = false;
-			controller->InAir = false;
-			FVector currentLocation = FVector(endPoint);
-			currentLocation.Z = 216.f;
-			controller->GetPawn()->SetActorLocation(currentLocation);
+			controller->GetPawn()->SetActorRotation(FMath::Lerp(controller->GetPawn()->GetActorRotation(), FVector(toTarget.GetSafeNormal(), 0.f).Rotation(), 0.1f));			
 			return;
 		}
-		FVector pawnPosition = controller->GetPawn()->GetActorLocation();
-		pawnPosition.Z = 216.f;
-		FVector2D const toTarget = FVector2D(endPoint - pawnPosition);
-		FVector2D const displacement = FMath::Min(toTarget.Size(), 200.f * DeltaTime) * toTarget.GetSafeNormal();
+		controller->Landing = false;
+		m_isInJumpingState = true;
+		controller->isStartJumping = true;
+		UCurveFloat* JumpCurve = controller->JumpCurve;
+		float value = JumpCurve->GetFloatValue(lastCurveTime + 3*DeltaTime);
+		lastCurveTime = lastCurveTime + 3*DeltaTime;
+
 		pawnPosition.Z = 216.f + controller->JumpApexHeight * value;
+		endPoint.Z = 216.f + controller->JumpApexHeight * value;
+
+		if (pawnPosition.Z >= 260)
+			controller->InAir = true;
+
+		if (pawnPosition.Z <= 265)
+			controller->Landing = true;
+
+		FVector2D const displacement =  DeltaTime * toTarget.GetSafeNormal();
+
 		controller->GetPawn()->SetActorLocation(pawnPosition + FVector(displacement, 0.f), true);
-		//controller->GetPawn()->SetActorRotation(FVector(displacement, 0.f).ToOrientationQuat());
-
-		//FVector directionToTarget = (endPoint - controller->GetPawn()->GetActorLocation()).GetSafeNormal();
-		//FVector currentLocation = FVector(endPoint * lastCurveTime + startPoint * (1.f - lastCurveTime));
-		//currentLocation.Z = 200.f + controller->JumpApexHeight * value;
-		//controller->GetPawn()->SetActorLocation(currentLocation);
-
+		controller->GetPawn()->AddMovementInput(FVector(toTarget.GetSafeNormal(), 0.f), 100.f);
+		if ((pawnPosition - endPoint).Size() <= 30.f)
+		{
+			endPoint.Z = 216.f;
+			controller->GetPawn()->SetActorLocation(endPoint, true);
+			m_isInJumpingState = false;
+			controller->Landing = true;
+			controller->AtJumpSegment = false;
+			controller->InAir = false;
+			controller->isStartJumping = false;
+		}
     }
     else
     {
 		Super::FollowPathSegment(DeltaTime);
+		controller->Landing = false;
     }
 }
 
@@ -79,7 +84,7 @@ void USDTPathFollowingComponent::SetMoveSegment(int32 segmentStartIndex)
 		const TArray<FNavPathPoint>& points = Path->GetPathPoints();
 		const FNavPathPoint& segmentStart = points[MoveSegmentStartIndex];
 
-		if (SDTUtils::HasJumpFlag(segmentStart) && FNavMeshNodeFlags(segmentStart.Flags).IsNavLink())
+		if (m_isInJumpingState || SDTUtils::HasJumpFlag(segmentStart) && FNavMeshNodeFlags(segmentStart.Flags).IsNavLink())
 			Cast<UCharacterMovementComponent>(MovementComp)->SetMovementMode(MOVE_Flying);
 		else
 			Cast<UCharacterMovementComponent>(MovementComp)->SetMovementMode(MOVE_Walking);

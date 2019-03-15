@@ -11,7 +11,6 @@
 #include "EngineUtils.h"
 #include "SoftDesignTrainingMainCharacter.h"
 
-
 ASDTAIController::ASDTAIController(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer.SetDefaultSubobjectClass<USDTPathFollowingComponent>(TEXT("PathFollowingComponent"))),
 	m_collectible(nullptr),
@@ -25,10 +24,12 @@ void ASDTAIController::GoToBestTarget(float deltaTime)
 {
 	ACharacter* character =  dynamic_cast<ACharacter*>(GetPawn());
     //Move to target depending on current behavior
+	m_runSpeed = 600;
+	if (AtJumpSegment)
+		m_runSpeed = JumpSpeed;
+	character->GetCharacterMovement()->MaxWalkSpeed = m_runSpeed;
 	if (m_currentAgentState == AgentState::ReachPlayerPosition)
 	{		
-		m_runSpeed = 200;
-		character->GetCharacterMovement()->MaxWalkSpeed = m_runSpeed;
 		MoveToLocation(m_player_pos);
 		if ((GetPawn()->GetActorLocation() - m_player_pos).Size() <= 60.f)
 		{
@@ -39,8 +40,6 @@ void ASDTAIController::GoToBestTarget(float deltaTime)
 	}
 	else if (m_currentAgentState == AgentState::ReachFleePoint)
 	{
-		m_runSpeed = 200;
-		character->GetCharacterMovement()->MaxWalkSpeed = m_runSpeed;
 		MoveToLocation(m_flee_point_pos);
 		if ((GetPawn()->GetActorLocation() - m_flee_point_pos).Size() <= 200.f)
 		{

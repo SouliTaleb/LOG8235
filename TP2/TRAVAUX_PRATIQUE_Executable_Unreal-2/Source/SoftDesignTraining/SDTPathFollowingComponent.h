@@ -17,7 +17,7 @@ class SOFTDESIGNTRAINING_API USDTPathFollowingComponent : public UPathFollowingC
 protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AI)
-	bool m_isJumping;
+	bool m_isInJumpingState;
 	FNavPathPoint segmentStart;
 	FNavPathPoint segmentEnd;
 	float lastCurveTime;

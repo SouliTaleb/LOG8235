@@ -2,7 +2,6 @@
 
 #include "SoftDesignTraining.h"
 #include "SDTAIController.h"
-#include "SDTCollectible.h"
 #include "SDTFleeLocation.h"
 #include "SDTPathFollowingComponent.h"
 #include "DrawDebugHelpers.h"
@@ -10,22 +9,52 @@
 #include "UnrealMathUtility.h"
 #include "SDTUtils.h"
 #include "EngineUtils.h"
+#include "SoftDesignTrainingMainCharacter.h"
 
 ASDTAIController::ASDTAIController(const FObjectInitializer& ObjectInitializer)
-    : Super(ObjectInitializer.SetDefaultSubobjectClass<USDTPathFollowingComponent>(TEXT("PathFollowingComponent")))
+	: Super(ObjectInitializer.SetDefaultSubobjectClass<USDTPathFollowingComponent>(TEXT("PathFollowingComponent"))),
+	m_collectible(nullptr),
+	m_player_pos(FVector::ZeroVector),
+	m_flee_point_pos(FVector::ZeroVector),
+	m_currentAgentState(AgentState::None)
 {
 }
 
 void ASDTAIController::GoToBestTarget(float deltaTime)
 {
+	ACharacter* character =  dynamic_cast<ACharacter*>(GetPawn());
     //Move to target depending on current behavior
-	TArray<AActor*> collectibles;
-
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASDTCollectible::StaticClass(), collectibles);
-
-	int index = FMath::RandRange(0, collectibles.Num() - 1);
-
-	MoveToActor(collectibles[index]);
+	m_runSpeed = 600;
+	if (AtJumpSegment)
+		m_runSpeed = JumpSpeed;
+	character->GetCharacterMovement()->MaxWalkSpeed = m_runSpeed;
+	if (m_currentAgentState == AgentState::ReachPlayerPosition)
+	{		
+		MoveToLocation(m_player_pos);
+		if ((GetPawn()->GetActorLocation() - m_player_pos).Size() <= 60.f)
+		{
+			m_player_pos = FVector::ZeroVector;
+			m_collectible = nullptr;
+			m_runSpeed = 0.f;
+		}
+	}
+	else if (m_currentAgentState == AgentState::ReachFleePoint)
+	{
+		MoveToLocation(m_flee_point_pos);
+		if ((GetPawn()->GetActorLocation() - m_flee_point_pos).Size() <= 200.f)
+		{
+			m_player_pos = FVector::ZeroVector;
+			m_collectible = nullptr;
+		}
+	}
+	else if (m_currentAgentState == AgentState::ReachCollectible)
+	{
+		m_runSpeed = 200;
+		character->GetCharacterMovement()->MaxWalkSpeed = m_runSpeed;
+		MoveToLocation(m_collectible->GetActorLocation());
+	}
+	if(GetPathFollowingComponent()->GetPath().IsValid())
+		ShowNavigationPath();
 }
 
 void ASDTAIController::OnMoveToTarget()
@@ -43,6 +72,15 @@ void ASDTAIController::OnMoveCompleted(FAIRequestID RequestID, const FPathFollow
 void ASDTAIController::ShowNavigationPath()
 {
     //Show current navigation path DrawDebugLine and DrawDebugSphere
+	const TArray<FNavPathPoint>& navPoints = GetPathFollowingComponent()->GetPath()->GetPathPoints();
+	FNavPathPoint precedentNavPathPoint;
+	for (FNavPathPoint navPathPoint : navPoints)
+	{
+		DrawDebugSphere(GetWorld(), navPathPoint.Location, 50.f, 24, FColor::Purple);
+		if (precedentNavPathPoint.HasNodeRef() && sizeof(navPoints) > 1)
+			DrawDebugLine(GetWorld(), precedentNavPathPoint.Location, navPathPoint.Location, FColor::Purple);
+		precedentNavPathPoint = navPathPoint;
+	}
 }
 
 void ASDTAIController::ChooseBehavior(float deltaTime)
@@ -78,7 +116,49 @@ void ASDTAIController::UpdatePlayerInteraction(float deltaTime)
     GetHightestPriorityDetectionHit(allDetectionHits, detectionHit);
 
     //Set behavior based on hit
+	ASoftDesignTrainingMainCharacter* playerActor = dynamic_cast<ASoftDesignTrainingMainCharacter*>(detectionHit.GetActor());
+	if (playerActor != nullptr)
+	{
+		m_player_pos = detectionHit.GetActor()->GetActorLocation();
+		if(!playerActor->IsPoweredUp())
+			m_currentAgentState = AgentState::ReachPlayerPosition;
+		else
+		{
+			TArray<AActor*> fleePoints;
+			UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASDTFleeLocation::StaticClass(), fleePoints);
+			ASDTFleeLocation* pertinentFleeLocation = nullptr;
+			for (AActor* fleeActor : fleePoints)
+			{
+				if ((pertinentFleeLocation == nullptr) || ((m_player_pos - fleeActor->GetActorLocation()).Size() > (m_player_pos - pertinentFleeLocation->GetActorLocation()).Size()))
+				{
+					pertinentFleeLocation = dynamic_cast<ASDTFleeLocation*>(fleeActor);
+				}
+			}
+			if (pertinentFleeLocation != nullptr)
+			{
+				m_flee_point_pos = pertinentFleeLocation->GetActorLocation();
+				m_currentAgentState = AgentState::ReachFleePoint;
+			}				
+		}
+	}
+	else
+	{
+		TArray<AActor*> collectibles;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASDTCollectible::StaticClass(), collectibles);
+		int randomIndex = 0;
+		ASDTCollectible* collectible = nullptr;
+		do
+		{
+			randomIndex = FMath::RandRange(0, collectibles.Num() - 1);
+			collectible = dynamic_cast<ASDTCollectible*>(collectibles[randomIndex]);
+		} while (collectible->IsOnCooldown());
 
+		if ((m_player_pos == FVector::ZeroVector) && ((m_collectible == nullptr) || m_collectible->IsOnCooldown() || ((GetPawn()->GetActorLocation() - m_collectible->GetActorLocation()).Size() < 50.f)))
+		{
+			m_currentAgentState = AgentState::ReachCollectible;
+			m_collectible = collectible;
+		}
+	}
     DrawDebugCapsule(GetWorld(), detectionStartLocation + m_DetectionCapsuleHalfLength * selfPawn->GetActorForwardVector(), m_DetectionCapsuleHalfLength, m_DetectionCapsuleRadius, selfPawn->GetActorQuat() * selfPawn->GetActorUpVector().ToOrientationQuat(), FColor::Blue);
 }
 
@@ -96,7 +176,9 @@ void ASDTAIController::GetHightestPriorityDetectionHit(const TArray<FHitResult>&
             }
             else if (component->GetCollisionObjectType() == COLLISION_COLLECTIBLE)
             {
-                outDetectionHit = hit;
+				ASDTCollectible* collectible = dynamic_cast<ASDTCollectible*>(hit.GetActor());
+				if(!collectible->IsOnCooldown())
+					outDetectionHit = hit;
             }
         }
     }

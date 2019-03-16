@@ -14,6 +14,13 @@ class SOFTDESIGNTRAINING_API USDTPathFollowingComponent : public UPathFollowingC
 {
     GENERATED_UCLASS_BODY()
 
+protected:
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AI)
+	bool m_isInJumpingState;
+	FNavPathPoint segmentStart;
+	FNavPathPoint segmentEnd;
+	float lastCurveTime;
 public:
     virtual void FollowPathSegment(float deltaTime) override;
     virtual void SetMoveSegment(int32 segmentStartIndex) override;

@@ -4,7 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "SDTBaseAIController.h"
+#include "SDTCollectible.h"
 #include "SDTAIController.generated.h"
+
+#define WALK_ANIMATION_SPEED 200.0f
+#define RUN_ANIMATION_SPEED 500.0f
 
 /**
  * 
@@ -33,10 +37,13 @@ public:
     float JumpApexHeight = 300.f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AI)
-    float JumpSpeed = 1.f;
+    float JumpSpeed = 200.f;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AI)
     bool AtJumpSegment = false;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AI)
+	bool isStartJumping = false;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AI)
     bool InAir = false;
@@ -44,11 +51,23 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AI)
     bool Landing = false;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AI)
+	float m_runSpeed;
+
 public:
     virtual void OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result) override;
     void AIStateInterrupted();
 
 protected:
+
+	enum class AgentState : uint8
+	{
+		ReachPlayerPosition,
+		ReachFleePoint,
+		ReachCollectible,
+		None
+	};
+
     void OnMoveToTarget();
     void GetHightestPriorityDetectionHit(const TArray<FHitResult>& hits, FHitResult& outDetectionHit);
     void UpdatePlayerInteraction(float deltaTime);
@@ -57,4 +76,10 @@ private:
     virtual void GoToBestTarget(float deltaTime) override;
     virtual void ChooseBehavior(float deltaTime) override;
     virtual void ShowNavigationPath() override;
+
+private:
+	AgentState m_currentAgentState;
+	FVector m_player_pos;
+	FVector m_flee_point_pos;
+	ASDTCollectible* m_collectible;
 };

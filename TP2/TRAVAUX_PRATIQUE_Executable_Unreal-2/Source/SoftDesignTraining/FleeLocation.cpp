@@ -16,13 +16,11 @@ AFleeLocation::AFleeLocation()
 void AFleeLocation::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame
 void AFleeLocation::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 

@@ -9,21 +9,27 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "UnrealMathUtility.h"
 #include "SDTUtils.h"
-#include "EngineUtils.h"
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Object.h"
+#include "EngineUtils.h"
 
 ASDTAIController::ASDTAIController(const FObjectInitializer& ObjectInitializer)
     : Super(ObjectInitializer.SetDefaultSubobjectClass<USDTPathFollowingComponent>(TEXT("PathFollowingComponent")))
+	  , m_isTargetSeenBBKeyID(0)
+	  , m_targetPosBBKeyID(0)
 {
     m_PlayerInteractionBehavior = PlayerInteractionBehavior_Collect;
 	m_behaviorTreeComponent = CreateDefaultSubobject<UBehaviorTreeComponent>(TEXT("BehaviorTreeComponent"));
 	m_blackboardComponent = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackboardComponent"));
-	m_IsPlayerDetected = false;
 }
 
 void ASDTAIController::GoToBestTarget(float deltaTime)
 {
-    switch (m_PlayerInteractionBehavior)
+	//StartBehaviorTree();
+	if (m_aiBehaviorTree)
+	{
+		m_behaviorTreeComponent->StartTree(*m_aiBehaviorTree);
+	}
+    /*switch (m_PlayerInteractionBehavior)
     {
     case PlayerInteractionBehavior_Collect:
 
@@ -42,23 +48,7 @@ void ASDTAIController::GoToBestTarget(float deltaTime)
         MoveToBestFleeLocation();
 
         break;
-    }
-}
-
-void ASDTAIController::StartBehaviorTree(APawn* pawn)
-{
-	if (m_aiBehaviorTree)
-	{
-		m_behaviorTreeComponent->StartTree(*m_aiBehaviorTree);
-	}
-}
-
-void ASDTAIController::StopBehaviorTree(APawn* pawn)
-{
-	if (m_aiBehaviorTree)
-	{
-		m_behaviorTreeComponent->StopTree();
-	}
+    }*/
 }
 
 void ASDTAIController::MoveToRandomCollectible()
@@ -382,22 +372,31 @@ void ASDTAIController::UpdatePlayerInteractionBehavior(const FHitResult& detecti
     }
 }
 
+void ASDTAIController::StartBehaviorTree()
+{
+	if (m_aiBehaviorTree)
+	{
+		m_behaviorTreeComponent->StartTree(*m_aiBehaviorTree);
+	}
+}
+
 void ASDTAIController::Possess(APawn* pawn)
 {
 	Super::Possess(pawn);
 
-		if (m_aiBehaviorTree)
-		{
-			m_blackboardComponent->InitializeBlackboard(*m_aiBehaviorTree->BlackboardAsset);
+	if (m_aiBehaviorTree)
+	{
+		m_blackboardComponent->InitializeBlackboard(*m_aiBehaviorTree->BlackboardAsset);
 
-			m_targetPosBBKeyID = m_blackboardComponent->GetKeyID("TargetPos");
-			m_isTargetSeenBBKeyID = m_blackboardComponent->GetKeyID("TargetIsSeen");
-			m_nextPatrolDestinationBBKeyID = m_blackboardComponent->GetKeyID("NextPatrolDest");
-			m_currentPatrolDestinationBBKeyID = m_blackboardComponent->GetKeyID("CurrentPatrolDest");
+		m_targetPosBBKeyID = m_blackboardComponent->GetKeyID("TargetPos");
+		m_isTargetSeenBBKeyID = m_blackboardComponent->GetKeyID("TargetIsSeen");
+		m_nextPatrolDestinationBBKeyID = m_blackboardComponent->GetKeyID("NextPatrolDest");
+		m_currentPatrolDestinationBBKeyID = m_blackboardComponent->GetKeyID("CurrentPatrolDest");
 
-			//Set this agent in the BT
-			m_blackboardComponent->SetValue<UBlackboardKeyType_Object>(m_blackboardComponent->GetKeyID("SelfActor"), pawn);
-		}
+		//Set this agent in the BT
+		m_blackboardComponent->SetValue<UBlackboardKeyType_Object>(m_blackboardComponent->GetKeyID("SelfActor"), pawn);
+	}
+
 }
 
 void ASDTAIController::TryDetectPlayer()
@@ -428,8 +427,8 @@ void ASDTAIController::TryDetectPlayer()
 	FHitResult detectionHit;
 	GetHightestPriorityDetectionHit(allDetectionHits, detectionHit);
 
-		if (detectionHit.GetComponent() && (detectionHit.GetComponent()->GetCollisionObjectType() == COLLISION_PLAYER) /*&& !HasLoSOnHit(detectionHit)*/)
-			m_IsPlayerDetected = true;
+	if (detectionHit.GetComponent() && (detectionHit.GetComponent()->GetCollisionObjectType() == COLLISION_PLAYER) /*&& !HasLoSOnHit(detectionHit)*/)
+		m_IsPlayerDetected = true;
 
-		// PlayerInteractionLoSUpdate();
+	// PlayerInteractionLoSUpdate();
 }

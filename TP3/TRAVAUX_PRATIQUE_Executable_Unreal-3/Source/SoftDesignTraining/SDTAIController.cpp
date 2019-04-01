@@ -10,11 +10,13 @@
 #include "UnrealMathUtility.h"
 #include "SDTUtils.h"
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Object.h"
+#include "SoftDesignTrainingMainCharacter.h"
 #include "EngineUtils.h"
 
 ASDTAIController::ASDTAIController(const FObjectInitializer& ObjectInitializer)
     : Super(ObjectInitializer.SetDefaultSubobjectClass<USDTPathFollowingComponent>(TEXT("PathFollowingComponent")))
 	  , m_isTargetSeenBBKeyID(0)
+	  , m_isTargetPoweredUpBBKeyID(0)
 	  , m_targetPosBBKeyID(0)
 {
     m_PlayerInteractionBehavior = PlayerInteractionBehavior_Collect;
@@ -25,9 +27,11 @@ ASDTAIController::ASDTAIController(const FObjectInitializer& ObjectInitializer)
 void ASDTAIController::GoToBestTarget(float deltaTime)
 {
 	//StartBehaviorTree();
-	if (m_aiBehaviorTree)
+	APawn* pawn = GetPawn();
+	ASoftDesignTrainingCharacter* charater = Cast<ASoftDesignTrainingCharacter>(pawn);
+	if (charater->GetBehaviorTree())
 	{
-		m_behaviorTreeComponent->StartTree(*m_aiBehaviorTree);
+		m_behaviorTreeComponent->StartTree(*charater->GetBehaviorTree());
 	}
     /*switch (m_PlayerInteractionBehavior)
     {
@@ -374,22 +378,24 @@ void ASDTAIController::UpdatePlayerInteractionBehavior(const FHitResult& detecti
 
 void ASDTAIController::StartBehaviorTree()
 {
-	if (m_aiBehaviorTree)
-	{
-		m_behaviorTreeComponent->StartTree(*m_aiBehaviorTree);
-	}
+	//if (m_aiBehaviorTree)
+	//{
+	//	m_behaviorTreeComponent->StartTree(*m_aiBehaviorTree);
+	//}
 }
 
 void ASDTAIController::Possess(APawn* pawn)
 {
 	Super::Possess(pawn);
 
-	if (m_aiBehaviorTree)
+	ASoftDesignTrainingCharacter* charater = Cast<ASoftDesignTrainingCharacter>(pawn);
+	if (charater->GetBehaviorTree())
 	{
-		m_blackboardComponent->InitializeBlackboard(*m_aiBehaviorTree->BlackboardAsset);
+		m_blackboardComponent->InitializeBlackboard(*charater->GetBehaviorTree()->BlackboardAsset);
 
 		m_targetPosBBKeyID = m_blackboardComponent->GetKeyID("TargetPos");
-		m_isTargetSeenBBKeyID = m_blackboardComponent->GetKeyID("TargetIsSeen");
+		m_isTargetSeenBBKeyID = m_blackboardComponent->GetKeyID("isPlayerSeen");
+		m_isTargetPoweredUpBBKeyID = m_blackboardComponent->GetKeyID("isPlayerPoweredUp");
 		m_nextPatrolDestinationBBKeyID = m_blackboardComponent->GetKeyID("NextPatrolDest");
 		m_currentPatrolDestinationBBKeyID = m_blackboardComponent->GetKeyID("CurrentPatrolDest");
 

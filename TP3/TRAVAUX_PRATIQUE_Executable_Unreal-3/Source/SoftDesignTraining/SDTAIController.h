@@ -50,7 +50,6 @@ public:
 	void StartBehaviorTree();
 
 	FVector GetTargetPlayerPos() const { return GetPawn()->GetActorLocation(); }
-	UBehaviorTree* GetBehaviorTree() const { return m_aiBehaviorTree; }
 
 	void TryDetectPlayer();
 	uint8 GetTargetPosBBKeyID() const { return m_targetPosBBKeyID; }
@@ -92,8 +91,6 @@ private:
 
 protected:
 	virtual void Possess(APawn* pawn) override;
-	UPROPERTY(EditAnywhere, category = Behavior)
-	UBehaviorTree* m_aiBehaviorTree;
 
 private:
 
@@ -103,10 +100,11 @@ private:
 	UPROPERTY(transient)
 	UBlackboardComponent* m_blackboardComponent;
 
-	uint8   m_targetPosBBKeyID;
-	uint8   m_isTargetSeenBBKeyID;
-	uint8   m_nextPatrolDestinationBBKeyID;
-	uint8   m_currentPatrolDestinationBBKeyID;
+	uint8 m_targetPosBBKeyID;
+	uint8 m_isTargetSeenBBKeyID;
+	uint8 m_isTargetPoweredUpBBKeyID;
+	uint8 m_nextPatrolDestinationBBKeyID;
+	uint8 m_currentPatrolDestinationBBKeyID;
 
 	bool m_IsPlayerDetected;
 

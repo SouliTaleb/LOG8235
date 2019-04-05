@@ -50,7 +50,6 @@ public:
 	virtual void BeginPlay() override;
 	void StartBehaviorTree();
 	FVector GetPlayerPlayerPos() const { return GetPawn()->GetActorLocation(); }
-	void TryDetectPlayer();
 	uint8 GetPlayerPosBBKeyID() const { return m_playerPosBBKeyID; }
 	uint8 GetPlayerSeenKeyID() const { return m_isPlayerSeenBBKeyID; }
 	uint8 GetNextPatrolDestinationKeyID() const { return m_nextPatrolDestinationBBKeyID; }
@@ -87,8 +86,6 @@ public:
 	void UpdatePlayerInteraction(float deltaTime);
 
 private:
-    virtual void GoToBestTarget(float deltaTime) override;
-    //virtual void UpdatePlayerInteraction(float deltaTime) override;
     virtual void ShowNavigationPath() override;
 
 protected:

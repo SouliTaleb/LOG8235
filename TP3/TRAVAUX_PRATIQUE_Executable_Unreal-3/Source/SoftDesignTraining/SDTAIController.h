@@ -85,6 +85,7 @@ public:
 	void MoveToRandomCollectible();
 	PlayerInteractionBehavior GetPlayerInteractionBehavior() const { return m_PlayerInteractionBehavior; }
 	void UpdatePlayerInteraction(float deltaTime);
+	void SelectBestFleeLocation();
 
 private:
     virtual void GoToBestTarget(float deltaTime) override;
@@ -110,7 +111,8 @@ private:
 
 	bool m_IsPlayerDetected;
 
-	double m_timeTakenDetectPlayer;
+	bool m_hasFleeLocation;
+	FVector m_fleeLocation;
 
 protected:
     FVector m_JumpTarget;

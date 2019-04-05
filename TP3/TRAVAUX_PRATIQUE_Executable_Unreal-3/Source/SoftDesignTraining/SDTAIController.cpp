@@ -3,8 +3,8 @@
 #include "SoftDesignTraining.h"
 #include "SDTAIController.h"
 #include "SDTCollectible.h"
-#include "SDTFleeLocation.h"
 #include "SDTPathFollowingComponent.h"
+#include "SDTFleeLocation.h"
 #include "DrawDebugHelpers.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "UnrealMathUtility.h"
@@ -154,42 +154,12 @@ void ASDTAIController::OnPlayerInteractionNoLosDone()
 
 void ASDTAIController::MoveToBestFleeLocation()
 {
-    float bestLocationScore = 0.f;
-    ASDTFleeLocation* bestFleeLocation = nullptr;
+	// TODO this should be done from the behavior tree
+	SelectBestFleeLocation();
 
-    ACharacter* playerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
-    if (!playerCharacter)
-        return;
-
-    for (TActorIterator<ASDTFleeLocation> actorIterator(GetWorld(), ASDTFleeLocation::StaticClass()); actorIterator; ++actorIterator)
+    if (m_hasFleeLocation)
     {
-        ASDTFleeLocation* fleeLocation = Cast<ASDTFleeLocation>(*actorIterator);
-        if (fleeLocation)
-        {
-            float distToFleeLocation = FVector::Dist(fleeLocation->GetActorLocation(), playerCharacter->GetActorLocation());
-
-            FVector selfToPlayer = playerCharacter->GetActorLocation() - GetPawn()->GetActorLocation();
-            selfToPlayer.Normalize();
-
-            FVector selfToFleeLocation = fleeLocation->GetActorLocation() - GetPawn()->GetActorLocation();
-            selfToFleeLocation.Normalize();
-
-            float fleeLocationToPlayerAngle = FMath::RadiansToDegrees(acosf(FVector::DotProduct(selfToPlayer, selfToFleeLocation)));
-            float locationScore = distToFleeLocation + fleeLocationToPlayerAngle * 100.f;
-
-            if (locationScore > bestLocationScore)
-            {
-                bestLocationScore = locationScore;
-                bestFleeLocation = fleeLocation;
-            }
-
-            DrawDebugString(GetWorld(), FVector(0.f, 0.f, 10.f), FString::SanitizeFloat(locationScore), fleeLocation, FColor::Red, 5.f, false);
-        }
-    }
-
-    if (bestFleeLocation)
-    {
-        MoveToLocation(bestFleeLocation->GetActorLocation(), 0.5f, false, true, false, NULL, false);
+        MoveToLocation(m_fleeLocation, 0.5f, false, true, false, NULL, false);
         OnMoveToTarget();
     }
 }
@@ -445,5 +415,56 @@ void ASDTAIController::TryDetectPlayer()
 	double timeTaken = FPlatformTime::Seconds() - startTime;
 
 	// Draw time taken for 3 seconds
-	DrawDebugString(GetWorld(), FVector(0.f, 0.f, 6.f), FString::SanitizeFloat(timeTaken) + "s", GetPawn(), FColor::Orange, 3.0f, false);
+	DrawDebugString(GetWorld(), FVector(0.f, 0.f, 8.f), "player: " + FString::SanitizeFloat(timeTaken) + "s", GetPawn(), FColor::Orange, 5.0f, false);
+}
+
+void ASDTAIController::SelectBestFleeLocation()
+{
+	double startTime = FPlatformTime::Seconds();
+
+	m_hasFleeLocation = false;
+
+	float bestLocationScore = 0.f;
+	ASDTFleeLocation* bestFleeLocation = nullptr;
+
+	ACharacter* playerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+	if (!playerCharacter)
+		return;
+
+	for (TActorIterator<ASDTFleeLocation> actorIterator(GetWorld(), ASDTFleeLocation::StaticClass()); actorIterator; ++actorIterator)
+	{
+		ASDTFleeLocation* fleeLocation = Cast<ASDTFleeLocation>(*actorIterator);
+		if (fleeLocation)
+		{
+			float distToFleeLocation = FVector::Dist(fleeLocation->GetActorLocation(), playerCharacter->GetActorLocation());
+
+			FVector selfToPlayer = playerCharacter->GetActorLocation() - GetPawn()->GetActorLocation();
+			selfToPlayer.Normalize();
+
+			FVector selfToFleeLocation = fleeLocation->GetActorLocation() - GetPawn()->GetActorLocation();
+			selfToFleeLocation.Normalize();
+
+			float fleeLocationToPlayerAngle = FMath::RadiansToDegrees(acosf(FVector::DotProduct(selfToPlayer, selfToFleeLocation)));
+			float locationScore = distToFleeLocation + fleeLocationToPlayerAngle * 100.f;
+
+			if (locationScore > bestLocationScore)
+			{
+				bestLocationScore = locationScore;
+				bestFleeLocation = fleeLocation;
+			}
+
+			DrawDebugString(GetWorld(), FVector(0.f, 0.f, 10.f), FString::SanitizeFloat(locationScore), fleeLocation, FColor::Red, 5.f, false);
+		}
+	}
+
+	if (bestFleeLocation != NULL)
+	{
+		m_hasFleeLocation = true;
+		m_fleeLocation = bestFleeLocation->GetActorLocation();
+	}
+
+	double timeTaken = FPlatformTime::Seconds() - startTime;
+
+	// Draw time taken for 3 seconds
+	DrawDebugString(GetWorld(), FVector(0.f, 0.f, 7.f), "flee: " + FString::SanitizeFloat(timeTaken) + "s", GetPawn(), FColor::Orange, 5.0f, false);
 }

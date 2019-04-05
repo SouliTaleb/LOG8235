@@ -60,31 +60,14 @@ void ASDTAIController::GoToBestTarget(float deltaTime)
 
 void ASDTAIController::MoveToRandomCollectible()
 {
-    float closestSqrCollectibleDistance = 18446744073709551610.f;
-    ASDTCollectible* closestCollectible = nullptr;
+    // TODO move to behavior tree
+	SelectRandomCollectible();
 
-    TArray<AActor*> foundCollectibles;
-    UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASDTCollectible::StaticClass(), foundCollectibles);
-
-    while (foundCollectibles.Num() != 0)
-    {
-        int index = FMath::RandRange(0, foundCollectibles.Num() - 1);
-
-        ASDTCollectible* collectibleActor = Cast<ASDTCollectible>(foundCollectibles[index]);
-        if (!collectibleActor)
-            return;
-
-        if (!collectibleActor->IsOnCooldown())
-        {
-            MoveToLocation(foundCollectibles[index]->GetActorLocation(), 0.5f, false, true, true, NULL, false);
-            OnMoveToTarget();
-            return;
-        }
-        else
-        {
-            foundCollectibles.RemoveAt(index);
-        }
-    }
+	if (m_hasCollectibleLocation)
+	{
+		MoveToLocation(m_collectibleLocation, 0.5f, false, true, true, NULL, false);
+		OnMoveToTarget();
+	}
 }
 
 void ASDTAIController::MoveToPlayer()
@@ -414,7 +397,7 @@ void ASDTAIController::TryDetectPlayer()
 
 	double timeTaken = FPlatformTime::Seconds() - startTime;
 
-	// Draw time taken for 3 seconds
+	// Draw time taken for 5 seconds
 	DrawDebugString(GetWorld(), FVector(0.f, 0.f, 8.f), "player: " + FString::SanitizeFloat(timeTaken) + "s", GetPawn(), FColor::Orange, 5.0f, false);
 }
 
@@ -465,6 +448,46 @@ void ASDTAIController::SelectBestFleeLocation()
 
 	double timeTaken = FPlatformTime::Seconds() - startTime;
 
-	// Draw time taken for 3 seconds
+	// Draw time taken for 5 seconds
 	DrawDebugString(GetWorld(), FVector(0.f, 0.f, 7.f), "flee: " + FString::SanitizeFloat(timeTaken) + "s", GetPawn(), FColor::Orange, 5.0f, false);
+}
+
+void ASDTAIController::SelectRandomCollectible()
+{
+	double startTime = FPlatformTime::Seconds();
+
+	m_hasCollectibleLocation = false;
+	ASDTCollectible* collectible = NULL;
+	
+	TArray<AActor*> foundCollectibles;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASDTCollectible::StaticClass(), foundCollectibles);
+
+	while (foundCollectibles.Num() != 0 && collectible == NULL)
+	{
+		int index = FMath::RandRange(0, foundCollectibles.Num() - 1);
+
+		ASDTCollectible* collectibleActor = Cast<ASDTCollectible>(foundCollectibles[index]);
+		if (!collectibleActor)
+			return;
+
+		if (!collectibleActor->IsOnCooldown())
+		{
+			collectible = collectibleActor;
+		}
+		else
+		{
+			foundCollectibles.RemoveAt(index);
+		}
+	}
+
+	if (collectible != NULL)
+	{
+		m_hasCollectibleLocation = true;
+		m_collectibleLocation = collectible->GetActorLocation();
+	}
+
+	double timeTaken = FPlatformTime::Seconds() - startTime;
+
+	// Draw time taken for 5 seconds
+	DrawDebugString(GetWorld(), FVector(0.f, 0.f, 6.f), "collectible: " + FString::SanitizeFloat(timeTaken) + "s", GetPawn(), FColor::Orange, 5.0f, false);
 }

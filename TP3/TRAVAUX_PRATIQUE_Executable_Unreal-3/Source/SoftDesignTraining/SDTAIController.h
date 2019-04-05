@@ -84,7 +84,7 @@ public:
 	void MoveToBestFleeLocation();
 	void MoveToRandomCollectible();
 	PlayerInteractionBehavior GetPlayerInteractionBehavior() const { return m_PlayerInteractionBehavior; }
-	virtual void UpdatePlayerInteraction(float deltaTime) override;
+	void UpdatePlayerInteraction(float deltaTime);
 
 private:
     virtual void GoToBestTarget(float deltaTime) override;

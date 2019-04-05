@@ -26,6 +26,5 @@ protected:
     bool m_ReachedTarget;
 private:
     virtual void GoToBestTarget(float deltaTime) {};
-    virtual void UpdatePlayerInteraction(float deltaTime) {};
     virtual void ShowNavigationPath() {};
 };

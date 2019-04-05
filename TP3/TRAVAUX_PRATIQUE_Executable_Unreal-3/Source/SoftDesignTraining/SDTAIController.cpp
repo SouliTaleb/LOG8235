@@ -409,6 +409,8 @@ void ASDTAIController::Possess(APawn* pawn)
 
 void ASDTAIController::TryDetectPlayer()
 {
+	double startTime = FPlatformTime::Seconds();
+
 	m_IsPlayerDetected = false;
 
 	//finish jump before updating AI state
@@ -439,4 +441,9 @@ void ASDTAIController::TryDetectPlayer()
 		m_IsPlayerDetected = true;
 
 	// PlayerInteractionLoSUpdate();
+
+	double timeTaken = FPlatformTime::Seconds() - startTime;
+
+	// Draw time taken for 3 seconds
+	DrawDebugString(GetWorld(), FVector(0.f, 0.f, 6.f), FString::SanitizeFloat(timeTaken) + "s", GetPawn(), FColor::Orange, 3.0f, false);
 }

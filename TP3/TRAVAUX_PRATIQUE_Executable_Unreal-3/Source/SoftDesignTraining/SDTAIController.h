@@ -110,6 +110,8 @@ private:
 
 	bool m_IsPlayerDetected;
 
+	double m_timeTakenDetectPlayer;
+
 protected:
     FVector m_JumpTarget;
     FRotator m_ObstacleAvoidanceRotation;

@@ -15,24 +15,27 @@
 
 ASDTAIController::ASDTAIController(const FObjectInitializer& ObjectInitializer)
     : Super(ObjectInitializer.SetDefaultSubobjectClass<USDTPathFollowingComponent>(TEXT("PathFollowingComponent")))
-	  , m_isTargetSeenBBKeyID(0)
-	  , m_isTargetPoweredUpBBKeyID(0)
-	  , m_targetPosBBKeyID(0)
+	  , m_isPlayerSeenBBKeyID(0)
+	  , m_isPlayerPoweredUpBBKeyID(0)
+	  , m_playerPosBBKeyID(0)
 {
     m_PlayerInteractionBehavior = PlayerInteractionBehavior_Collect;
 	m_behaviorTreeComponent = CreateDefaultSubobject<UBehaviorTreeComponent>(TEXT("BehaviorTreeComponent"));
 	m_blackboardComponent = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackboardComponent"));
 }
 
+void ASDTAIController::BeginPlay()
+{
+	Super::BeginPlay();
+
+	StartBehaviorTree();
+}
+
 void ASDTAIController::GoToBestTarget(float deltaTime)
 {
-	//StartBehaviorTree();
-	APawn* pawn = GetPawn();
-	ASoftDesignTrainingCharacter* charater = Cast<ASoftDesignTrainingCharacter>(pawn);
-	if (charater->GetBehaviorTree())
-	{
-		m_behaviorTreeComponent->StartTree(*charater->GetBehaviorTree());
-	}
+	//StartBehaviorTree(GetPawn());
+	//MoveToRandomCollectible();
+
     /*switch (m_PlayerInteractionBehavior)
     {
     case PlayerInteractionBehavior_Collect:
@@ -281,13 +284,16 @@ void ASDTAIController::UpdatePlayerInteraction(float deltaTime)
     switch (m_PlayerInteractionBehavior)
     {
     case PlayerInteractionBehavior_Chase:
+		m_IsPlayerDetected = true;
         debugString = "Chase";
         break;
     case PlayerInteractionBehavior_Flee:
+		m_IsPlayerDetected = true;
         debugString = "Flee";
         break;
     case PlayerInteractionBehavior_Collect:
         debugString = "Collect";
+		m_IsPlayerDetected = false;
         break;
     }
 
@@ -378,10 +384,12 @@ void ASDTAIController::UpdatePlayerInteractionBehavior(const FHitResult& detecti
 
 void ASDTAIController::StartBehaviorTree()
 {
-	//if (m_aiBehaviorTree)
-	//{
-	//	m_behaviorTreeComponent->StartTree(*m_aiBehaviorTree);
-	//}
+	ASoftDesignTrainingCharacter* charater = Cast<ASoftDesignTrainingCharacter>(GetPawn());
+	UBehaviorTree* behaviorTree = charater->GetBehaviorTree();
+	if (behaviorTree)
+	{
+		m_behaviorTreeComponent->StartTree(*behaviorTree);
+	}
 }
 
 void ASDTAIController::Possess(APawn* pawn)
@@ -392,17 +400,11 @@ void ASDTAIController::Possess(APawn* pawn)
 	if (charater->GetBehaviorTree())
 	{
 		m_blackboardComponent->InitializeBlackboard(*charater->GetBehaviorTree()->BlackboardAsset);
-
-		m_targetPosBBKeyID = m_blackboardComponent->GetKeyID("TargetPos");
-		m_isTargetSeenBBKeyID = m_blackboardComponent->GetKeyID("isPlayerSeen");
-		m_isTargetPoweredUpBBKeyID = m_blackboardComponent->GetKeyID("isPlayerPoweredUp");
-		m_nextPatrolDestinationBBKeyID = m_blackboardComponent->GetKeyID("NextPatrolDest");
-		m_currentPatrolDestinationBBKeyID = m_blackboardComponent->GetKeyID("CurrentPatrolDest");
+		m_isPlayerSeenBBKeyID = m_blackboardComponent->GetKeyID("isPlayerSeen");
 
 		//Set this agent in the BT
 		m_blackboardComponent->SetValue<UBlackboardKeyType_Object>(m_blackboardComponent->GetKeyID("SelfActor"), pawn);
 	}
-
 }
 
 void ASDTAIController::TryDetectPlayer()

@@ -12,6 +12,8 @@
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Object.h"
 #include "SoftDesignTrainingMainCharacter.h"
 #include "EngineUtils.h"
+#include "AiAgentGroupManager.h"
+
 
 ASDTAIController::ASDTAIController(const FObjectInitializer& ObjectInitializer)
     : Super(ObjectInitializer.SetDefaultSubobjectClass<USDTPathFollowingComponent>(TEXT("PathFollowingComponent")))
@@ -27,6 +29,8 @@ ASDTAIController::ASDTAIController(const FObjectInitializer& ObjectInitializer)
 void ASDTAIController::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	//AiAgentGroupManager::GetInstance()->RegisterAIAgent(this);
 
 	StartBehaviorTree();
 }

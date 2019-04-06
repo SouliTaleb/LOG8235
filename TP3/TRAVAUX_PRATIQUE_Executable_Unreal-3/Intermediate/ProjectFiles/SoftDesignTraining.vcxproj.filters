@@ -1,0 +1,196 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <None Include="..\..\SoftDesignTraining.uproject" />
+    <Filter Include="Source">
+      <UniqueIdentifier>{5538C976-B923-439E-8F29-BCD5C271E6CE}</UniqueIdentifier>
+    </Filter>
+    <None Include="..\..\Source\SoftDesignTraining.Target.cs">
+      <Filter>Source</Filter>
+    </None>
+    <None Include="..\..\Source\SoftDesignTrainingEditor.Target.cs">
+      <Filter>Source</Filter>
+    </None>
+    <Filter Include="Config">
+      <UniqueIdentifier>{B22F4499-3248-4E56-B5C1-7703233FE023}</UniqueIdentifier>
+    </Filter>
+    <None Include="..\..\Config\DefaultEditor.ini">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="..\..\Config\DefaultEditorPerProjectUserSettings.ini">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="..\..\Config\DefaultEngine.ini">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="..\..\Config\DefaultGame.ini">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="..\..\Config\DefaultInput.ini">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="..\..\Config\Input Cover Backup.ini">
+      <Filter>Config</Filter>
+    </None>
+    <Filter Include="Source\SoftDesignTraining">
+      <UniqueIdentifier>{44493CB2-526E-44AC-AAB4-DB5BFBE888BF}</UniqueIdentifier>
+    </Filter>
+    <ClCompile Include="..\..\Source\SoftDesignTraining\FleeLocation.cpp">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\SoftDesignTraining\FleeLocation.h">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\SoftDesignTraining\SDTAIController.cpp">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\SoftDesignTraining\SDTAIController.h">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\SoftDesignTraining\SDTAnimNotify_JumpEnd.cpp">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\SoftDesignTraining\SDTAnimNotify_JumpEnd.h">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\SoftDesignTraining\SDTAnimNotify_JumpStart.cpp">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\SoftDesignTraining\SDTAnimNotify_JumpStart.h">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\SoftDesignTraining\SDTBaseAIController.cpp">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\SoftDesignTraining\SDTBaseAIController.h">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\SoftDesignTraining\SDTCollectible.cpp">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\SoftDesignTraining\SDTCollectible.h">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\SoftDesignTraining\SDTFleeLocation.cpp">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\SoftDesignTraining\SDTFleeLocation.h">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\SoftDesignTraining\SDTNavArea_Jump.cpp">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\SoftDesignTraining\SDTNavArea_Jump.h">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\SoftDesignTraining\SDTPathFollowingComponent.cpp">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\SoftDesignTraining\SDTPathFollowingComponent.h">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\SoftDesignTraining\SDTProjectile.cpp">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\SoftDesignTraining\SDTProjectile.h">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\SoftDesignTraining\SDTProjectileSpawner.cpp">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\SoftDesignTraining\SDTProjectileSpawner.h">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\SoftDesignTraining\SDTUtils.cpp">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\SoftDesignTraining\SDTUtils.h">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClInclude>
+    <None Include="..\..\Source\SoftDesignTraining\SoftDesignTraining.Build.cs">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </None>
+    <ClCompile Include="..\..\Source\SoftDesignTraining\SoftDesignTraining.cpp">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\SoftDesignTraining\SoftDesignTraining.h">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\SoftDesignTraining\SoftDesignTrainingCharacter.cpp">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\SoftDesignTraining\SoftDesignTrainingCharacter.h">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\SoftDesignTraining\SoftDesignTrainingGameMode.cpp">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\SoftDesignTraining\SoftDesignTrainingGameMode.h">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\SoftDesignTraining\SoftDesignTrainingMainCharacter.cpp">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\SoftDesignTraining\SoftDesignTrainingMainCharacter.h">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\SoftDesignTraining\SoftDesignTrainingPlayerController.cpp">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\SoftDesignTraining\SoftDesignTrainingPlayerController.h">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClInclude>
+    <Filter Include="Source\SoftDesignTraining\Service">
+      <UniqueIdentifier>{1B13C9D9-45EA-4D1C-A246-BBAC7FDE0DDB}</UniqueIdentifier>
+    </Filter>
+    <ClCompile Include="..\..\Source\SoftDesignTraining\Service\BTService_TryDetectPlayer.cpp">
+      <Filter>Source\SoftDesignTraining\Service</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\SoftDesignTraining\Service\BTService_TryDetectPlayer.h">
+      <Filter>Source\SoftDesignTraining\Service</Filter>
+    </ClInclude>
+    <Filter Include="Source\SoftDesignTraining\Task">
+      <UniqueIdentifier>{A350511F-679F-430A-9C07-C099139F759B}</UniqueIdentifier>
+    </Filter>
+    <ClCompile Include="..\..\Source\SoftDesignTraining\Task\BTTask_IsPlayerDetected.cpp">
+      <Filter>Source\SoftDesignTraining\Task</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\SoftDesignTraining\Task\BTTask_IsPlayerDetected.h">
+      <Filter>Source\SoftDesignTraining\Task</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\SoftDesignTraining\Task\BTTask_IsPlayerPoweredUp.cpp">
+      <Filter>Source\SoftDesignTraining\Task</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\SoftDesignTraining\Task\BTTask_IsPlayerPoweredUp.h">
+      <Filter>Source\SoftDesignTraining\Task</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\SoftDesignTraining\Task\BTTask_MoveToFleePoint.cpp">
+      <Filter>Source\SoftDesignTraining\Task</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\SoftDesignTraining\Task\BTTask_MoveToFleePoint.h">
+      <Filter>Source\SoftDesignTraining\Task</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\SoftDesignTraining\Task\BTTask_MoveToPlayer.cpp">
+      <Filter>Source\SoftDesignTraining\Task</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\SoftDesignTraining\Task\BTTask_MoveToPlayer.h">
+      <Filter>Source\SoftDesignTraining\Task</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\SoftDesignTraining\Task\BTTask_MoveToRandomCollectible.cpp">
+      <Filter>Source\SoftDesignTraining\Task</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\SoftDesignTraining\Task\BTTask_MoveToRandomCollectible.h">
+      <Filter>Source\SoftDesignTraining\Task</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Source\SoftDesignTraining\LoadBalancer.cpp">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Source\SoftDesignTraining\LoadBalancer.h">
+      <Filter>Source\SoftDesignTraining</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

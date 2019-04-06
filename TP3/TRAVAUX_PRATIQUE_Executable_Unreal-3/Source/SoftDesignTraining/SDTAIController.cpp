@@ -397,8 +397,8 @@ void ASDTAIController::TryDetectPlayer()
 
 	double timeTaken = FPlatformTime::Seconds() - startTime;
 
-	// Draw time taken for 5 seconds
-	DrawDebugString(GetWorld(), FVector(0.f, 0.f, 8.f), "player: " + FString::SanitizeFloat(timeTaken) + "s", GetPawn(), FColor::Orange, 5.0f, false);
+	// Draw time taken for 1 second
+	DrawDebugString(GetWorld(), FVector(0.f, 0.f, 5.f), "player: " + FString::SanitizeFloat(timeTaken) + "s", GetPawn(), FColor::Green, 1.0f, false);
 }
 
 void ASDTAIController::SelectBestFleeLocation()
@@ -436,7 +436,7 @@ void ASDTAIController::SelectBestFleeLocation()
 				bestFleeLocation = fleeLocation;
 			}
 
-			DrawDebugString(GetWorld(), FVector(0.f, 0.f, 10.f), FString::SanitizeFloat(locationScore), fleeLocation, FColor::Red, 5.f, false);
+			DrawDebugString(GetWorld(), FVector(0.f, 0.f, 10.f), FString::SanitizeFloat(locationScore), fleeLocation, FColor::Red, 1.f, false);
 		}
 	}
 
@@ -448,8 +448,8 @@ void ASDTAIController::SelectBestFleeLocation()
 
 	double timeTaken = FPlatformTime::Seconds() - startTime;
 
-	// Draw time taken for 5 seconds
-	DrawDebugString(GetWorld(), FVector(0.f, 0.f, 7.f), "flee: " + FString::SanitizeFloat(timeTaken) + "s", GetPawn(), FColor::Orange, 5.0f, false);
+	// Draw time taken for 1 second
+	DrawDebugString(GetWorld(), FVector(5.f, 0.f, 5.f), "flee: " + FString::SanitizeFloat(timeTaken) + "s", GetPawn(), FColor::Orange, 5.0f, false);
 }
 
 void ASDTAIController::SelectRandomCollectible()
@@ -488,6 +488,6 @@ void ASDTAIController::SelectRandomCollectible()
 
 	double timeTaken = FPlatformTime::Seconds() - startTime;
 
-	// Draw time taken for 5 seconds
-	DrawDebugString(GetWorld(), FVector(0.f, 0.f, 6.f), "collectible: " + FString::SanitizeFloat(timeTaken) + "s", GetPawn(), FColor::Orange, 5.0f, false);
+	// Draw time taken for 1 second
+	DrawDebugString(GetWorld(), FVector(10.f, 0.f, 5.f), "collectible: " + FString::SanitizeFloat(timeTaken) + "s", GetPawn(), FColor::Blue, 1.0f, false);
 }

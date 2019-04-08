@@ -4,6 +4,7 @@
 
 LoadBalancer::LoadBalancer()
 {
+	executionsPerFrame = ALLOWED_TIME / AVERAGE_EXECUTE_TIME;
 }
 
 LoadBalancer* LoadBalancer::GetLoadBalancer()
@@ -19,40 +20,17 @@ LoadBalancer* LoadBalancer::GetLoadBalancer()
 void LoadBalancer::IncreaseCount()
 {
 	count++;
+
+	executeEvery = (int) ceil(count / executionsPerFrame);
 }
 
-bool LoadBalancer::IsValidId(int id)
+//bool LoadBalancer::IsValidId(int id)
+//{
+//	return order > 0 ? id <= lastId : id >= lastId;
+//}
+
+bool LoadBalancer::CanExecute(uint64& lastFrameExecuted)
 {
-	return order > 0 ? id <= lastId : id >= lastId;
-}
-
-bool LoadBalancer::CanExecute(double lastTimeSpent, int& id)
-{
-	// Reset on each frame (tick)
-	if (lastFrame != GFrameCounter)
-	{
-		timeSpent = 0.0;
-		lastFrame = GFrameCounter;
-	}
-
-	// If the id has already been updated or the method would take too long
-	if (!IsValidId(id) || timeSpent + lastTimeSpent > ALLOWED_TIME)
-	{
-		return false;
-	}
-
-	// The code is allowed to be executed
-
-	id = lastId += order;
-
-	if (lastId == count)
-	{
-		// Reverse order of execution
-		order *= -1;
-	}
-
-	// TOOD increase timeSpent here or seperately?
-
-	return true;
+	return GFrameCounter - lastFrameExecuted >= executeEvery;
 }
 

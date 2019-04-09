@@ -2,7 +2,7 @@
 
 #include "SoftDesignTraining.h"
 #include "SDTBaseAIController.h"
-
+#include "AiAgentGroupManager.h"
 
 ASDTBaseAIController::ASDTBaseAIController(const FObjectInitializer& ObjectInitializer)
     :Super(ObjectInitializer)
@@ -15,7 +15,8 @@ ASDTBaseAIController::ASDTBaseAIController(const FObjectInitializer& ObjectIniti
 void ASDTBaseAIController::Tick(float deltaTime)
 {
     Super::Tick(deltaTime);
-
+	AiAgentGroupManager* aiAgentGroupManager = AiAgentGroupManager::GetInstance();
+	aiAgentGroupManager->DrawSphereOverHead();
     if (!m_ReachedTarget)
     {
         ShowNavigationPath();

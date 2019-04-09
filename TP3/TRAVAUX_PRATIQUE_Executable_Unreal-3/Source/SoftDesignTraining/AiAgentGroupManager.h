@@ -21,6 +21,7 @@ private:
 
     //SINGLETON
     AiAgentGroupManager();
+	//~AiAgentGroupManager();
     static AiAgentGroupManager* m_Instance;
 
     TArray<ASDTAIController*> m_registeredAgents;

@@ -9,6 +9,14 @@ AiAgentGroupManager::AiAgentGroupManager()
 {
 }
 
+/**AiAgentGroupManager::~AiAgentGroupManager()
+{
+	if (m_Instance)
+	{
+		Destroy();
+	}
+}**/
+
 AiAgentGroupManager* AiAgentGroupManager::GetInstance()
 {
     if (!m_Instance)
@@ -19,7 +27,7 @@ AiAgentGroupManager* AiAgentGroupManager::GetInstance()
     return m_Instance;
 }
 
-void AiAgentGroupManager::Destroy()
+void AiAgentGroupManager::Destroy()//Ajouter cette fonction qqp ! dans un destructeur?
 {
     delete m_Instance;
     m_Instance = nullptr;
@@ -27,7 +35,8 @@ void AiAgentGroupManager::Destroy()
 
 void AiAgentGroupManager::RegisterAIAgent(ASDTAIController* aiAgent)
 {
-    m_registeredAgents.Add(aiAgent);
+    //m_registeredAgents.Add(aiAgent);
+	m_registeredAgents.AddUnique(aiAgent);
 }
 
 void AiAgentGroupManager::UnregisterAIAgent(ASDTAIController* aiAgent)
@@ -39,8 +48,14 @@ void AiAgentGroupManager::UnregisterAIAgent(ASDTAIController* aiAgent)
 void AiAgentGroupManager::DrawSphereOverHead() {
 	for (int i = 0; i < m_registeredAgents.Num(); i++) {
 		AAIController* aicontroller = m_registeredAgents[i];
-		FVector actorLocation = aicontroller->GetPawn()->GetActorLocation();
-		DrawDebugSphere(aicontroller->GetWorld(), actorLocation + FVector(0.f, 0.f, 100.f), 15.0f, 32, FColor::Purple);
+		int c = 0;
+		if (aicontroller) {
+			FVector actorLocation = aicontroller->GetPawn()->GetActorLocation();
+			DrawDebugSphere(aicontroller->GetWorld(), actorLocation + FVector(0.f, 0.f, 100.f), 15.0f, 32, FColor::Purple);
+		}
+		else {
+			c++;
+		}
 	}
 	
 }

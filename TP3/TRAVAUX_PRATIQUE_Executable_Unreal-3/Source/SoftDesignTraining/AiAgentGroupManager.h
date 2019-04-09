@@ -8,8 +8,7 @@
  */
 class SOFTDESIGNTRAINING_API AiAgentGroupManager
 {
-public:
-
+public:   
     static AiAgentGroupManager* GetInstance();
     static void Destroy();
 
@@ -21,9 +20,10 @@ public:
 private:
 
     //SINGLETON
-	AiAgentGroupManager();
-	~AiAgentGroupManager();
+    AiAgentGroupManager();
     static AiAgentGroupManager* m_Instance;
 
-	TSet<ASDTAIController*> m_registeredAgents;
+    TArray<ASDTAIController*> m_registeredAgents;
+	
+
 };

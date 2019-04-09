@@ -16,8 +16,7 @@ void ASDTBaseAIController::Tick(float deltaTime)
 {
     Super::Tick(deltaTime);
 	AiAgentGroupManager* aiAgentGroupManager = AiAgentGroupManager::GetInstance();
-	if(aiAgentGroupManager)
-		aiAgentGroupManager->DrawSphereOverHead();
+	aiAgentGroupManager->DrawSphereOverHead();
     if (!m_ReachedTarget)
     {
         ShowNavigationPath();

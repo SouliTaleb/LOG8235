@@ -1,26 +1,19 @@
 #pragma once
+#include "CoreGlobals.h"
+
 class LoadBalancer
 {
-// Singleton stuff
 public:
-	static LoadBalancer* GetLoadBalancer();
-private:
 	LoadBalancer();
-	static LoadBalancer* instance;
-// Load balancing stuff
-public:
-	void IncreaseCount();
-	//bool IsValidId(int);
-	bool CanExecute(uint64&);
+
+	void increaseCount();
+	bool canExecute(uint64&);
+
 private:
-	const double ALLOWED_TIME = 1.0 / 30.0; // 30 fps in seconds
-	const double AVERAGE_EXECUTE_TIME = 0.00002; // TODO
+	const double ALLOWED_TIME = 1.0 / 30.0 / 2.0; // 30 fps in seconds but only half the delta time is allowed
+	const double AVERAGE_EXECUTE_TIME = ALLOWED_TIME / 2.0; // 0.00008; // Max time for executions
 	double executionsPerFrame;
 	int executeEvery;
 	int count = 0;
-	/*int order = 1;
-	uint64 lastFrame;
-	int lastId = 0;
-	double timeSpent = 0;*/
 };
 

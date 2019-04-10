@@ -16,6 +16,8 @@ ASoftDesignTrainingGameMode::ASoftDesignTrainingGameMode()
 	{
 		DefaultPawnClass = PlayerPawnBPClass.Class;
 	}
+
+	loadBalancer = new LoadBalancer();
 }
 
 void ASoftDesignTrainingGameMode::StartPlay()

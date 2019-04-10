@@ -6,7 +6,8 @@
 #include "SDTBaseAIController.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "BehaviorTree/BehaviorTree.h" 
+#include "BehaviorTree/BehaviorTree.h"
+#include "LoadBalancer.h"
 #include "SDTAIController.generated.h"
 
 /**
@@ -117,6 +118,9 @@ private:
 
 	bool m_hasCollectibleLocation;
 	FVector m_collectibleLocation;
+
+	LoadBalancer* loadBalancer;
+	uint64 lastUpdateFrame;
 
 protected:
     FVector m_JumpTarget;

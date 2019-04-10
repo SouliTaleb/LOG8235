@@ -12,6 +12,7 @@
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Object.h"
 #include "SoftDesignTrainingMainCharacter.h"
 #include "EngineUtils.h"
+#include "SoftDesignTrainingGameMode.h"
 
 ASDTAIController::ASDTAIController(const FObjectInitializer& ObjectInitializer)
     : Super(ObjectInitializer.SetDefaultSubobjectClass<USDTPathFollowingComponent>(TEXT("PathFollowingComponent")))
@@ -29,6 +30,11 @@ void ASDTAIController::BeginPlay()
 	Super::BeginPlay();
 
 	StartBehaviorTree();
+
+	//GetWorld()->GetAuthGameMode()
+	loadBalancer = ((ASoftDesignTrainingGameMode*) GetWorld()->GetAuthGameMode())->loadBalancer;
+
+	loadBalancer->increaseCount();
 }
 
 void ASDTAIController::GoToBestTarget(float deltaTime)
@@ -60,6 +66,8 @@ void ASDTAIController::GoToBestTarget(float deltaTime)
 
 void ASDTAIController::MoveToRandomCollectible()
 {
+	if (!loadBalancer->canExecute(lastUpdateFrame)) return;
+
     // TODO move to behavior tree
 	SelectRandomCollectible();
 
@@ -137,6 +145,8 @@ void ASDTAIController::OnPlayerInteractionNoLosDone()
 
 void ASDTAIController::MoveToBestFleeLocation()
 {
+	if (!loadBalancer->canExecute(lastUpdateFrame)) return;
+
 	// TODO this should be done from the behavior tree
 	SelectBestFleeLocation();
 
@@ -362,6 +372,8 @@ void ASDTAIController::Possess(APawn* pawn)
 
 void ASDTAIController::TryDetectPlayer()
 {
+	if (!loadBalancer->canExecute(lastUpdateFrame)) return;
+
 	double startTime = FPlatformTime::Seconds();
 
 	m_IsPlayerDetected = false;

@@ -13,16 +13,7 @@ EBTNodeResult::Type UBTTask_MoveToPlayer::ExecuteTask(UBehaviorTreeComponent& Ow
 {
 	if (ASDTAIController* aiController = Cast<ASDTAIController>(OwnerComp.GetAIOwner()))
 	{
-		ACharacter * playerCharacter = UGameplayStatics::GetPlayerCharacter(aiController->GetWorld(), 0);
-		FVector playerPosition = playerCharacter->GetActorLocation();
-		if ((aiController->GetPawn()->GetActorLocation() - playerPosition).Size() < 250.f)
-		{
-			aiController->MoveToPlayer();
-		}
-		else
-		{
-			aiController->MoveToAnchorPoint();
-		}
+		aiController->MoveToPlayer();
 		return EBTNodeResult::Succeeded;
 	}
 	return EBTNodeResult::Failed;

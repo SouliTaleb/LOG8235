@@ -3,9 +3,6 @@
 #include "SoftDesignTraining.h"
 #include "AiAgentGroupManager.h"
 #include "DrawDebugHelpers.h"
-#include <cmath>
-#include "SoftDesignTrainingMainCharacter.h"
-
 AiAgentGroupManager* AiAgentGroupManager::m_Instance;
 
 AiAgentGroupManager::AiAgentGroupManager()
@@ -48,60 +45,19 @@ void AiAgentGroupManager::UnregisterAIAgent(ASDTAIController* aiAgent)
 }
 
 
-void AiAgentGroupManager::DrawSphereOverHead() 
-{
-	for (int i = 0; i < m_registeredAgents.Num(); i++) 
-	{
+void AiAgentGroupManager::DrawSphereOverHead() {
+	for (int i = 0; i < m_registeredAgents.Num(); i++) {
 		AAIController* aicontroller = m_registeredAgents[i];
 		int c = 0;
-		if (aicontroller) 
-		{
+		if (aicontroller) {
 			FVector actorLocation = aicontroller->GetPawn()->GetActorLocation();
 			DrawDebugSphere(aicontroller->GetWorld(), actorLocation + FVector(0.f, 0.f, 100.f), 15.0f, 32, FColor::Purple);
 		}
-		else 
-		{
+		else {
 			c++;
 		}
 	}
 	
-}
-
-void AiAgentGroupManager::GenerateAnchorPoints()
-{
-	if (m_registeredAgents.Num() < 1)
-		return;
-	m_anchorPoints.Empty();
-	int circle = 2*PI;
-	float angle = circle / m_registeredAgents.Num();
-	AAIController* aicontroller = m_registeredAgents[0];
-	ACharacter * playerCharacter = UGameplayStatics::GetPlayerCharacter(aicontroller->GetWorld(), 0);
-	FVector playerPosition = playerCharacter->GetActorLocation();
-	float rayon = 200.f;
-	FVector direction = (aicontroller->GetPawn()->GetActorLocation() - playerPosition).GetSafeNormal();
-	float currentAngle = 0.f;
-	for (int i = 0; i < m_registeredAgents.Num(); i++)
-	{
-		//const FRotator rot(0, 0, currentAngle);
-		//FVector position = rot.RotateVector(direction)*rayon;
-
-		FVector position = playerPosition;
-		position.X += rayon * cos(currentAngle);
-		position.Y += rayon * sin(currentAngle);
-
-		m_anchorPoints.Add(position);
-		currentAngle += angle;
-		DrawDebugSphere(aicontroller->GetWorld(), position + FVector(0.f, 0.f, 100.f), 25.0f, 32, FColor::Red);
-	}
-	AssignPointsToAI();
-}
-
-void AiAgentGroupManager::AssignPointsToAI()
-{
-	for (int i = 0; i < m_registeredAgents.Num(); i++)
-	{
-		m_registeredAgents[i]->SetAnchorPoint(m_anchorPoints[i]);
-	}
 }
 
 /**TargetLKPInfo AiAgentGroupManager::GetLKPFromGroup(const FString& targetLabel,bool& targetfound)

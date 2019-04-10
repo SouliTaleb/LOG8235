@@ -38,7 +38,6 @@ protected:
         UMaterialInterface* m_PoweredUpMaterial;
 
     void OnPowerUpDone();
-
     bool m_IsPoweredUp;
     FTimerHandle m_PowerUpTimer;
 };

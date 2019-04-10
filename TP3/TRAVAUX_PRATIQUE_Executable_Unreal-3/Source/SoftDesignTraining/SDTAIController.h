@@ -81,12 +81,15 @@ public:
 	void AIStateInterrupted();
 	bool IsPlayerPlayerSeen() const { return m_IsPlayerDetected; }
 	void MoveToPlayer();
+	void MoveToAnchorPoint();
 	void MoveToBestFleeLocation();
 	void MoveToRandomCollectible();
 	PlayerInteractionBehavior GetPlayerInteractionBehavior() const { return m_PlayerInteractionBehavior; }
 	void UpdatePlayerInteraction(float deltaTime);
 	void SelectBestFleeLocation();
 	void SelectRandomCollectible();
+	FVector GetAnchorPoint() const { return m_anchorPoint;}
+	void SetAnchorPoint(FVector anchorPoint) { m_anchorPoint = anchorPoint; }
 
 private:
     virtual void GoToBestTarget(float deltaTime) override;
@@ -118,6 +121,7 @@ private:
 	bool m_hasCollectibleLocation;
 	FVector m_collectibleLocation;
 
+	FVector m_anchorPoint;
 protected:
     FVector m_JumpTarget;
     FRotator m_ObstacleAvoidanceRotation;

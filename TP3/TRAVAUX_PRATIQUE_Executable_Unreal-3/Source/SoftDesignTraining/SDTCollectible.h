@@ -25,5 +25,4 @@ public:
 
 protected:
     FTimerHandle m_CollectCooldownTimer;
-	
 };

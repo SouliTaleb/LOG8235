@@ -16,7 +16,6 @@ public:
     void UnregisterAIAgent(ASDTAIController* aiAgent);
 	void DrawSphereOverHead();
 	void GenerateAnchorPoints();
-    //TargetLKPInfo GetLKPFromGroup(const FString& targetLabel, bool& targetFound);
 
 private:
 
@@ -24,10 +23,7 @@ private:
     AiAgentGroupManager();
 	void AssignPointsToAI();
 
-	//~AiAgentGroupManager();
     static AiAgentGroupManager* m_Instance;
 	TArray<FVector> m_anchorPoints;
     TArray<ASDTAIController*> m_registeredAgents;
-	
-
 };

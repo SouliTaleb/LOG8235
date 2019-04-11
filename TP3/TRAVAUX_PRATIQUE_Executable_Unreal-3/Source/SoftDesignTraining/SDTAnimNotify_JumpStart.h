@@ -14,7 +14,5 @@ class SOFTDESIGNTRAINING_API USDTAnimNotify_JumpStart : public UAnimNotify
 {
 	GENERATED_BODY()
 	
-    virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation) override;
-	
-	
+    virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation) override;	
 };

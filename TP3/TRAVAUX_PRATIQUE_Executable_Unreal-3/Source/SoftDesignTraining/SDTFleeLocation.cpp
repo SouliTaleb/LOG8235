@@ -16,13 +16,11 @@ ASDTFleeLocation::ASDTFleeLocation()
 void ASDTFleeLocation::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame
 void ASDTFleeLocation::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 

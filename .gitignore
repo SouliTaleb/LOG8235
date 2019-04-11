@@ -1,10 +1,6 @@
 
 *.cs
 
-*.sln
-
-*.uproject
-
 TP1/Binaries/
 
 TP1/Build/
@@ -68,3 +64,5 @@ TP3/TRAVAUX_PRATIQUE_Executable_Unreal-3/Saved/
 \.vs/
 
 TP3/TRAVAUX_PRATIQUE_Executable_Unreal-3/enc_temp_folder/
+
+\.DS_Store

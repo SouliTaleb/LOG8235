@@ -12,14 +12,6 @@ AiAgentGroupManager::AiAgentGroupManager()
 {
 }
 
-/**AiAgentGroupManager::~AiAgentGroupManager()
-{
-	if (m_Instance)
-	{
-		Destroy();
-	}
-}**/
-
 AiAgentGroupManager* AiAgentGroupManager::GetInstance()
 {
     if (!m_Instance)
@@ -30,7 +22,7 @@ AiAgentGroupManager* AiAgentGroupManager::GetInstance()
     return m_Instance;
 }
 
-void AiAgentGroupManager::Destroy()//Ajouter cette fonction qqp ! dans un destructeur?
+void AiAgentGroupManager::Destroy()
 {
     delete m_Instance;
     m_Instance = nullptr;
@@ -38,7 +30,6 @@ void AiAgentGroupManager::Destroy()//Ajouter cette fonction qqp ! dans un destru
 
 void AiAgentGroupManager::RegisterAIAgent(ASDTAIController* aiAgent)
 {
-    //m_registeredAgents.Add(aiAgent);
 	m_registeredAgents.AddUnique(aiAgent);
 }
 
@@ -78,20 +69,16 @@ void AiAgentGroupManager::GenerateAnchorPoints()
 	ACharacter * playerCharacter = UGameplayStatics::GetPlayerCharacter(aicontroller->GetWorld(), 0);
 	FVector playerPosition = playerCharacter->GetActorLocation();
 	float rayon = 200.f;
-	FVector direction = (aicontroller->GetPawn()->GetActorLocation() - playerPosition).GetSafeNormal();
 	float currentAngle = 0.f;
 	for (int i = 0; i < m_registeredAgents.Num(); i++)
 	{
-		//const FRotator rot(0, 0, currentAngle);
-		//FVector position = rot.RotateVector(direction)*rayon;
+		FVector newPosition = playerPosition;
+		newPosition.X += rayon * cos(currentAngle);
+		newPosition.Y += rayon * sin(currentAngle);
 
-		FVector position = playerPosition;
-		position.X += rayon * cos(currentAngle);
-		position.Y += rayon * sin(currentAngle);
-
-		m_anchorPoints.Add(position);
+		m_anchorPoints.Add(newPosition);
 		currentAngle += angle;
-		DrawDebugSphere(aicontroller->GetWorld(), position + FVector(0.f, 0.f, 100.f), 25.0f, 32, FColor::Red);
+		DrawDebugSphere(aicontroller->GetWorld(), newPosition + FVector(0.f, 0.f, 100.f), 25.0f, 32, FColor::Red);
 	}
 	AssignPointsToAI();
 }
@@ -103,11 +90,3 @@ void AiAgentGroupManager::AssignPointsToAI()
 		m_registeredAgents[i]->SetAnchorPoint(m_anchorPoints[i]);
 	}
 }
-
-/**TargetLKPInfo AiAgentGroupManager::GetLKPFromGroup(const FString& targetLabel,bool& targetfound)
-{
-    int agentCount = m_registeredAgents.Num();
-    TargetLKPInfo outLKPInfo = TargetLKPInfo();
-    
-    return outLKPInfo;
-}**/

@@ -31,41 +31,13 @@ void ASDTAIController::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	//AiAgentGroupManager::GetInstance()->RegisterAIAgent(this);
-
 	StartBehaviorTree();
-
-	//GetWorld()->GetAuthGameMode()
 	loadBalancer = ((ASoftDesignTrainingGameMode*) GetWorld()->GetAuthGameMode())->loadBalancer;
-
 	loadBalancer->increaseCount();
 }
 
 void ASDTAIController::GoToBestTarget(float deltaTime)
 {
-	//StartBehaviorTree(GetPawn());
-	//MoveToRandomCollectible();
-
-    /*switch (m_PlayerInteractionBehavior)
-    {
-    case PlayerInteractionBehavior_Collect:
-
-        MoveToRandomCollectible();
-
-        break;
-
-    case PlayerInteractionBehavior_Chase:
-
-        MoveToPlayer();
-
-        break;
-
-    case PlayerInteractionBehavior_Flee:
-
-        MoveToBestFleeLocation();
-
-        break;
-    }*/
 }
 
 void ASDTAIController::MoveToRandomCollectible()
@@ -219,62 +191,6 @@ void ASDTAIController::ShowNavigationPath()
     }
 }
 
-void ASDTAIController::UpdatePlayerInteraction(float deltaTime)
-{
-    //finish jump before updating AI state
-    if (AtJumpSegment)
-        return;
-
-    APawn* selfPawn = GetPawn();
-    if (!selfPawn)
-        return;
-
-    ACharacter* playerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
-    if (!playerCharacter)
-        return;
-
-    FVector detectionStartLocation = selfPawn->GetActorLocation() + selfPawn->GetActorForwardVector() * m_DetectionCapsuleForwardStartingOffset;
-    FVector detectionEndLocation = detectionStartLocation + selfPawn->GetActorForwardVector() * m_DetectionCapsuleHalfLength * 2;
-
-    TArray<TEnumAsByte<EObjectTypeQuery>> detectionTraceObjectTypes;
-    detectionTraceObjectTypes.Add(UEngineTypes::ConvertToObjectType(COLLISION_PLAYER));
-
-    TArray<FHitResult> allDetectionHits;
-    GetWorld()->SweepMultiByObjectType(allDetectionHits, detectionStartLocation, detectionEndLocation, FQuat::Identity, detectionTraceObjectTypes, FCollisionShape::MakeSphere(m_DetectionCapsuleRadius));
-
-    FHitResult detectionHit;
-    GetHightestPriorityDetectionHit(allDetectionHits, detectionHit);
-
-    UpdatePlayerInteractionBehavior(detectionHit, deltaTime);
-
-    if (GetMoveStatus() == EPathFollowingStatus::Idle)
-    {
-        m_ReachedTarget = true;
-    }
-
-    FString debugString = "";
-
-    switch (m_PlayerInteractionBehavior)
-    {
-    case PlayerInteractionBehavior_Chase:
-		m_IsPlayerDetected = true;
-        debugString = "Chase";
-        break;
-    case PlayerInteractionBehavior_Flee:
-		m_IsPlayerDetected = true;
-        debugString = "Flee";
-        break;
-    case PlayerInteractionBehavior_Collect:
-        debugString = "Collect";
-		m_IsPlayerDetected = false;
-        break;
-    }
-
-    DrawDebugString(GetWorld(), FVector(0.f, 0.f, 5.f), debugString, GetPawn(), FColor::Orange, 0.f, false);
-
-    DrawDebugCapsule(GetWorld(), detectionStartLocation + m_DetectionCapsuleHalfLength * selfPawn->GetActorForwardVector(), m_DetectionCapsuleHalfLength, m_DetectionCapsuleRadius, selfPawn->GetActorQuat() * selfPawn->GetActorUpVector().ToOrientationQuat(), FColor::Blue);
-}
-
 bool ASDTAIController::HasLoSOnHit(const FHitResult& hit)
 {
     if (!hit.GetComponent())
@@ -414,8 +330,6 @@ void ASDTAIController::TryDetectPlayer()
 
 	if (detectionHit.GetComponent() && (detectionHit.GetComponent()->GetCollisionObjectType() == COLLISION_PLAYER) /*&& !HasLoSOnHit(detectionHit)*/)
 		m_IsPlayerDetected = true;
-
-	// PlayerInteractionLoSUpdate();
 
 	double timeTaken = FPlatformTime::Seconds() - startTime;
 

@@ -57,6 +57,7 @@ public:
 	uint8 GetNextPatrolDestinationKeyID() const { return m_nextPatrolDestinationBBKeyID; }
 	uint8 GetCurrentPatrolDestinationKeyID() const { return m_currentPatrolDestinationBBKeyID; }
 	bool GetReachedTarget() const { return m_ReachedTarget; }
+	void OnMoveToTarget();
 
 protected:
 
@@ -73,8 +74,7 @@ protected:
 	bool HasLoSOnHit(const FHitResult& hit);
 	void PlayerInteractionLoSUpdate();
 	void OnPlayerInteractionNoLosDone();
-	void OnMoveToTarget();
-
+	
 public:
 	virtual void OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result) override;
 	void RotateTowards(const FVector& targetLocation);
@@ -91,6 +91,11 @@ public:
 	void SelectRandomCollectible();
 	FVector GetAnchorPoint() const { return m_anchorPoint;}
 	void SetAnchorPoint(FVector anchorPoint) { m_anchorPoint = anchorPoint; }
+	bool GetHasCollectibleLocation() { return m_hasCollectibleLocation; }
+	FVector GetCollectibleLocation() { return m_collectibleLocation; }
+	uint64 GetLastUpdateFrame() { return lastUpdateFrame; }
+	bool GetHasFleeLocation() { return m_hasFleeLocation; }
+	FVector GetFleeLocation() { return m_fleeLocation; }
 
 private:
     virtual void GoToBestTarget(float deltaTime) override;

@@ -8,13 +8,18 @@
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Object.h"
 #include "AI/Navigation/NavigationSystem.h"
 #include "BTTask_MoveToFleePoint.h"
+#include "SoftDesignTrainingGameMode.h"
 
 EBTNodeResult::Type UBTTask_MoveToFleePoint::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	if (ASDTAIController* aiController = Cast<ASDTAIController>(OwnerComp.GetAIOwner()))
 	{
-		aiController->MoveToBestFleeLocation();
-		return EBTNodeResult::Succeeded;
+		if (aiController->GetHasFleeLocation()) {
+			aiController->MoveToLocation(aiController->GetFleeLocation(), 0.5f, false, true, false, NULL, false);
+			aiController->OnMoveToTarget();
+			return EBTNodeResult::Succeeded;
+		}
+		
 	}
 	return EBTNodeResult::Failed;
 }

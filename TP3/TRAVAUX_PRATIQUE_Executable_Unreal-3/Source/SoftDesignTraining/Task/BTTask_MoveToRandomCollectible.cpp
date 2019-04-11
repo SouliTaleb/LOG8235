@@ -8,14 +8,16 @@
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Object.h"
 #include "AI/Navigation/NavigationSystem.h"
 #include "BTTask_MoveToRandomCollectible.h"
+#include "SoftDesignTrainingGameMode.h"
 
 EBTNodeResult::Type UBTTask_MoveToRandomCollectible::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	if (ASDTAIController* aiController = Cast<ASDTAIController>(OwnerComp.GetAIOwner()))
 	{
-		if (aiController->GetReachedTarget())
+		if (aiController->GetHasCollectibleLocation() && aiController->GetReachedTarget())
 		{
-			aiController->MoveToRandomCollectible();
+			aiController->MoveToLocation(aiController->GetCollectibleLocation(), 0.5f, false, true, true, NULL, false);
+			aiController->OnMoveToTarget();
 			return EBTNodeResult::Succeeded;
 		}
 	}

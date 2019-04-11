@@ -40,28 +40,14 @@ void ASDTAIController::GoToBestTarget(float deltaTime)
 {
 }
 
-void ASDTAIController::MoveToRandomCollectible()
-{
-	if (!loadBalancer->canExecute(lastUpdateFrame)) return;
-
-    // TODO move to behavior tree
-	SelectRandomCollectible();
-
-	if (m_hasCollectibleLocation)
-	{
-		MoveToLocation(m_collectibleLocation, 0.5f, false, true, true, NULL, false);
-		OnMoveToTarget();
-	}
-}
-
 void ASDTAIController::MoveToPlayer()
 {
-    ACharacter * playerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
-    if (!playerCharacter)
-        return;
-	
-    MoveToLocation(playerCharacter->GetActorLocation(), 0.5f, false, true, true, NULL, false);
-    OnMoveToTarget();
+	ACharacter * playerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+	if (!playerCharacter)
+		return;
+
+	MoveToLocation(playerCharacter->GetActorLocation(), 0.5f, false, true, true, NULL, false);
+	OnMoveToTarget();
 }
 
 void ASDTAIController::MoveToAnchorPoint()
@@ -122,20 +108,6 @@ void ASDTAIController::OnPlayerInteractionNoLosDone()
     {
         AIStateInterrupted();
         m_PlayerInteractionBehavior = PlayerInteractionBehavior_Collect;
-    }
-}
-
-void ASDTAIController::MoveToBestFleeLocation()
-{
-	if (!loadBalancer->canExecute(lastUpdateFrame)) return;
-
-	// TODO this should be done from the behavior tree
-	SelectBestFleeLocation();
-
-    if (m_hasFleeLocation)
-    {
-        MoveToLocation(m_fleeLocation, 0.5f, false, true, false, NULL, false);
-        OnMoveToTarget();
     }
 }
 
@@ -217,29 +189,6 @@ void ASDTAIController::AIStateInterrupted()
     m_ReachedTarget = true;
 }
 
-ASDTAIController::PlayerInteractionBehavior ASDTAIController::GetCurrentPlayerInteractionBehavior(const FHitResult& hit)
-{
-    if (m_PlayerInteractionBehavior == PlayerInteractionBehavior_Collect)
-    {
-        if (!hit.GetComponent())
-            return PlayerInteractionBehavior_Collect;
-
-        if (hit.GetComponent()->GetCollisionObjectType() != COLLISION_PLAYER)
-            return PlayerInteractionBehavior_Collect;
-
-        if (!HasLoSOnHit(hit))
-            return PlayerInteractionBehavior_Collect;
-
-        return SDTUtils::IsPlayerPoweredUp(GetWorld()) ? PlayerInteractionBehavior_Flee : PlayerInteractionBehavior_Chase;
-    }
-    else
-    {
-        PlayerInteractionLoSUpdate();
-
-        return SDTUtils::IsPlayerPoweredUp(GetWorld()) ? PlayerInteractionBehavior_Flee : PlayerInteractionBehavior_Chase;
-    }
-}
-
 void ASDTAIController::GetHightestPriorityDetectionHit(const TArray<FHitResult>& hits, FHitResult& outDetectionHit)
 {
     for (const FHitResult& hit : hits)
@@ -257,17 +206,6 @@ void ASDTAIController::GetHightestPriorityDetectionHit(const TArray<FHitResult>&
                 outDetectionHit = hit;
             }
         }
-    }
-}
-
-void ASDTAIController::UpdatePlayerInteractionBehavior(const FHitResult& detectionHit, float deltaTime)
-{
-    PlayerInteractionBehavior currentBehavior = GetCurrentPlayerInteractionBehavior(detectionHit);
-
-    if (currentBehavior != m_PlayerInteractionBehavior)
-    {
-        m_PlayerInteractionBehavior = currentBehavior;
-        AIStateInterrupted();
     }
 }
 

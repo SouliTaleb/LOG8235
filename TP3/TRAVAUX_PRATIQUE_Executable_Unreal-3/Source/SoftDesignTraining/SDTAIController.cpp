@@ -13,7 +13,7 @@
 #include "SoftDesignTrainingMainCharacter.h"
 #include "EngineUtils.h"
 #include "AiAgentGroupManager.h"
-
+#include "SoftDesignTrainingGameMode.h"
 
 ASDTAIController::ASDTAIController(const FObjectInitializer& ObjectInitializer)
     : Super(ObjectInitializer.SetDefaultSubobjectClass<USDTPathFollowingComponent>(TEXT("PathFollowingComponent")))
@@ -34,6 +34,11 @@ void ASDTAIController::BeginPlay()
 	//AiAgentGroupManager::GetInstance()->RegisterAIAgent(this);
 
 	StartBehaviorTree();
+
+	//GetWorld()->GetAuthGameMode()
+	loadBalancer = ((ASoftDesignTrainingGameMode*) GetWorld()->GetAuthGameMode())->loadBalancer;
+
+	loadBalancer->increaseCount();
 }
 
 void ASDTAIController::GoToBestTarget(float deltaTime)
@@ -65,6 +70,8 @@ void ASDTAIController::GoToBestTarget(float deltaTime)
 
 void ASDTAIController::MoveToRandomCollectible()
 {
+	if (!loadBalancer->canExecute(lastUpdateFrame)) return;
+
     // TODO move to behavior tree
 	SelectRandomCollectible();
 
@@ -148,6 +155,8 @@ void ASDTAIController::OnPlayerInteractionNoLosDone()
 
 void ASDTAIController::MoveToBestFleeLocation()
 {
+	if (!loadBalancer->canExecute(lastUpdateFrame)) return;
+
 	// TODO this should be done from the behavior tree
 	SelectBestFleeLocation();
 
@@ -373,6 +382,8 @@ void ASDTAIController::Possess(APawn* pawn)
 
 void ASDTAIController::TryDetectPlayer()
 {
+	if (!loadBalancer->canExecute(lastUpdateFrame)) return;
+
 	double startTime = FPlatformTime::Seconds();
 
 	m_IsPlayerDetected = false;
@@ -408,8 +419,13 @@ void ASDTAIController::TryDetectPlayer()
 
 	double timeTaken = FPlatformTime::Seconds() - startTime;
 
+<<<<<<< HEAD
 	// Draw time taken for 5 seconds
 	DrawDebugString(GetWorld(), FVector(0.f, 0.f, 8.f), "player: " + FString::SanitizeFloat(timeTaken) + "s", GetPawn(), FColor::Orange, .5f, false);
+=======
+	// Draw time taken for 1 second
+	DrawDebugString(GetWorld(), FVector(0.f, 0.f, 5.f), "player: " + FString::SanitizeFloat(timeTaken) + "s", GetPawn(), FColor::Green, 1.0f, false);
+>>>>>>> load-balancing
 }
 
 void ASDTAIController::SelectBestFleeLocation()
@@ -447,7 +463,11 @@ void ASDTAIController::SelectBestFleeLocation()
 				bestFleeLocation = fleeLocation;
 			}
 
+<<<<<<< HEAD
 			DrawDebugString(GetWorld(), FVector(0.f, 0.f, 10.f), FString::SanitizeFloat(locationScore), fleeLocation, FColor::Red, .5f, false);
+=======
+			DrawDebugString(GetWorld(), FVector(0.f, 0.f, 10.f), FString::SanitizeFloat(locationScore), fleeLocation, FColor::Red, 1.f, false);
+>>>>>>> load-balancing
 		}
 	}
 
@@ -459,8 +479,13 @@ void ASDTAIController::SelectBestFleeLocation()
 
 	double timeTaken = FPlatformTime::Seconds() - startTime;
 
+<<<<<<< HEAD
 	// Draw time taken for 5 seconds
 	DrawDebugString(GetWorld(), FVector(0.f, 0.f, 7.f), "flee: " + FString::SanitizeFloat(timeTaken) + "s", GetPawn(), FColor::Purple, .5f, false);
+=======
+	// Draw time taken for 1 second
+	DrawDebugString(GetWorld(), FVector(5.f, 0.f, 5.f), "flee: " + FString::SanitizeFloat(timeTaken) + "s", GetPawn(), FColor::Orange, 5.0f, false);
+>>>>>>> load-balancing
 }
 
 void ASDTAIController::SelectRandomCollectible()
@@ -499,6 +524,11 @@ void ASDTAIController::SelectRandomCollectible()
 
 	double timeTaken = FPlatformTime::Seconds() - startTime;
 
+<<<<<<< HEAD
 	// Draw time taken for 5 seconds
 	DrawDebugString(GetWorld(), FVector(0.f, 0.f, 6.f), "collectible: " + FString::SanitizeFloat(timeTaken) + "s", GetPawn(), FColor::Green, .5f, false);
+=======
+	// Draw time taken for 1 second
+	DrawDebugString(GetWorld(), FVector(10.f, 0.f, 5.f), "collectible: " + FString::SanitizeFloat(timeTaken) + "s", GetPawn(), FColor::Blue, 1.0f, false);
+>>>>>>> load-balancing
 }

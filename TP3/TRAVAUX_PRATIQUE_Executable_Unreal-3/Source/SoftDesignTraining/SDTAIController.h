@@ -52,10 +52,7 @@ public:
 	void StartBehaviorTree();
 	FVector GetPlayerPlayerPos() const { return GetPawn()->GetActorLocation(); }
 	void TryDetectPlayer();
-	uint8 GetPlayerPosBBKeyID() const { return m_playerPosBBKeyID; }
 	uint8 GetPlayerSeenKeyID() const { return m_isPlayerSeenBBKeyID; }
-	uint8 GetNextPatrolDestinationKeyID() const { return m_nextPatrolDestinationBBKeyID; }
-	uint8 GetCurrentPatrolDestinationKeyID() const { return m_currentPatrolDestinationBBKeyID; }
 	bool GetReachedTarget() const { return m_ReachedTarget; }
 
 protected:
@@ -86,7 +83,6 @@ public:
 	void MoveToBestFleeLocation();
 	void MoveToRandomCollectible();
 	PlayerInteractionBehavior GetPlayerInteractionBehavior() const { return m_PlayerInteractionBehavior; }
-	void UpdatePlayerInteraction(float deltaTime);
 	void SelectBestFleeLocation();
 	void SelectRandomCollectible();
 	FVector GetAnchorPoint() const { return m_anchorPoint;}
@@ -107,11 +103,7 @@ private:
 	UPROPERTY(transient)
 	UBlackboardComponent* m_blackboardComponent;
 
-	uint8 m_playerPosBBKeyID;
 	uint8 m_isPlayerSeenBBKeyID;
-	uint8 m_isPlayerPoweredUpBBKeyID;
-	uint8 m_nextPatrolDestinationBBKeyID;
-	uint8 m_currentPatrolDestinationBBKeyID;
 
 	bool m_IsPlayerDetected;
 

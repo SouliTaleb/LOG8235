@@ -18,8 +18,6 @@
 ASDTAIController::ASDTAIController(const FObjectInitializer& ObjectInitializer)
     : Super(ObjectInitializer.SetDefaultSubobjectClass<USDTPathFollowingComponent>(TEXT("PathFollowingComponent")))
 	  , m_isPlayerSeenBBKeyID(0)
-	  , m_isPlayerPoweredUpBBKeyID(0)
-	  , m_playerPosBBKeyID(0)
 	 , m_anchorPoint(FVector::ZeroVector)
 {
     m_PlayerInteractionBehavior = PlayerInteractionBehavior_Collect;
@@ -290,7 +288,6 @@ void ASDTAIController::Possess(APawn* pawn)
 	{
 		m_blackboardComponent->InitializeBlackboard(*charater->GetBehaviorTree()->BlackboardAsset);
 		m_isPlayerSeenBBKeyID = m_blackboardComponent->GetKeyID("isPlayerSeen");
-
 		//Set this agent in the BT
 		m_blackboardComponent->SetValue<UBlackboardKeyType_Object>(m_blackboardComponent->GetKeyID("SelfActor"), pawn);
 	}

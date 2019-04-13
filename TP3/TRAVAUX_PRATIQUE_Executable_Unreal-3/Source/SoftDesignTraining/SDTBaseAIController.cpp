@@ -15,7 +15,7 @@ ASDTBaseAIController::ASDTBaseAIController(const FObjectInitializer& ObjectIniti
 void ASDTBaseAIController::Tick(float deltaTime)
 {
     Super::Tick(deltaTime);
-	GeneratePlayerAnchorPoints();
+
     if (!m_ReachedTarget)
     {
         ShowNavigationPath();

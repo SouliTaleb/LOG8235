@@ -25,6 +25,5 @@ protected:
 
     bool m_ReachedTarget;
 private:
-    virtual void GeneratePlayerAnchorPoints() {};
     virtual void ShowNavigationPath() {};
 };

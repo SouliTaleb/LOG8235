@@ -60,11 +60,15 @@ void AiAgentGroupManager::DrawSphereOverHead()
 
 void AiAgentGroupManager::GenerateAnchorPoints()
 {
-	if (m_registeredAgents.Num() < 1)
-		return;
+	if (m_registeredAgents.Num() < 1) return;
+
+	if (lastAnchorPointUpdateFrame == GFrameCounter) return;
+
+	lastAnchorPointUpdateFrame = GFrameCounter;
+
 	m_anchorPoints.Empty();
-	int circle = 2*PI;
-	float angle = circle / m_registeredAgents.Num();
+	float circle = 2.f * PI;
+	float angle = circle / (float) m_registeredAgents.Num();
 	AAIController* aicontroller = m_registeredAgents[0];
 	ACharacter * playerCharacter = UGameplayStatics::GetPlayerCharacter(aicontroller->GetWorld(), 0);
 	FVector playerPosition = playerCharacter->GetActorLocation();

@@ -34,16 +34,6 @@ void ASDTAIController::BeginPlay()
 	loadBalancer->increaseCount();
 }
 
-void ASDTAIController::GeneratePlayerAnchorPoints()
-{
-	if (m_IsPlayerDetected && !(SDTUtils::IsPlayerPoweredUp(GetWorld())))
-	{
-		AiAgentGroupManager* aiAgentGroupManager = AiAgentGroupManager::GetInstance();
-		aiAgentGroupManager->DrawSphereOverHead();
-		aiAgentGroupManager->GenerateAnchorPoints();
-	}
-}
-
 void ASDTAIController::MoveToRandomCollectible()
 {
 	if (!loadBalancer->canExecute(lastUpdateFrame)) return;
@@ -70,6 +60,10 @@ void ASDTAIController::MoveToPlayer()
 
 void ASDTAIController::MoveToAnchorPoint()
 {
+	AiAgentGroupManager* aiAgentGroupManager = AiAgentGroupManager::GetInstance();
+	aiAgentGroupManager->DrawSphereOverHead();
+	aiAgentGroupManager->GenerateAnchorPoints();
+
 	MoveToLocation(m_anchorPoint, 0.5f, false, true, true, NULL, false);
 	OnMoveToTarget();
 }

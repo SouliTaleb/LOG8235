@@ -89,7 +89,6 @@ public:
 	void SetAnchorPoint(FVector anchorPoint) { m_anchorPoint = anchorPoint; }
 
 private:
-    virtual void GeneratePlayerAnchorPoints() override;
     virtual void ShowNavigationPath() override;
 
 protected:

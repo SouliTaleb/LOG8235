@@ -8,7 +8,7 @@
 
 AiAgentGroupManager* AiAgentGroupManager::m_Instance;
 
-AiAgentGroupManager::AiAgentGroupManager()
+AiAgentGroupManager::AiAgentGroupManager() : m_numberOfAnchorPoints(0)
 {
 }
 
@@ -68,13 +68,15 @@ void AiAgentGroupManager::GenerateAnchorPoints()
 
 	m_anchorPoints.Empty();
 	float circle = 2.f * PI;
-	float angle = circle / (float) m_registeredAgents.Num();
+	m_numberOfAnchorPoints = (m_registeredAgents.Num() < 8)? m_registeredAgents.Num() : 8;
+	float angle = circle / (float)m_numberOfAnchorPoints;
 	AAIController* aicontroller = m_registeredAgents[0];
 	ACharacter * playerCharacter = UGameplayStatics::GetPlayerCharacter(aicontroller->GetWorld(), 0);
 	FVector playerPosition = playerCharacter->GetActorLocation();
 	float rayon = 200.f;
 	float currentAngle = 0.f;
-	for (int i = 0; i < m_registeredAgents.Num(); i++)
+	
+	for (int i = 0; i < m_numberOfAnchorPoints; i++) // 8 points arround the player are enough tu surround him.
 	{
 		FVector newPosition = playerPosition;
 		newPosition.X += rayon * cos(currentAngle);
@@ -91,6 +93,6 @@ void AiAgentGroupManager::AssignPointsToAI()
 {
 	for (int i = 0; i < m_registeredAgents.Num(); i++)
 	{
-		m_registeredAgents[i]->SetAnchorPoint(m_anchorPoints[i]);
+		m_registeredAgents[i]->SetAnchorPoint(m_anchorPoints[i%m_numberOfAnchorPoints]);
 	}
 }

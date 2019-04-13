@@ -26,6 +26,6 @@ private:
     static AiAgentGroupManager* m_Instance;
 	TArray<FVector> m_anchorPoints;
     TArray<ASDTAIController*> m_registeredAgents;
-
+	int m_numberOfAnchorPoints;
 	uint64 lastAnchorPointUpdateFrame;
 };

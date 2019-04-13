@@ -38,7 +38,6 @@ void ASDTAIController::MoveToRandomCollectible()
 {
 	if (!loadBalancer->canExecute(lastUpdateFrame)) return;
 
-    // TODO move to behavior tree
 	SelectRandomCollectible();
 
 	if (m_hasCollectibleLocation)
@@ -127,7 +126,6 @@ void ASDTAIController::MoveToBestFleeLocation()
 {
 	if (!loadBalancer->canExecute(lastUpdateFrame)) return;
 
-	// TODO this should be done from the behavior tree
 	SelectBestFleeLocation();
 
     if (m_hasFleeLocation)

@@ -25,6 +25,6 @@ protected:
 
     bool m_ReachedTarget;
 private:
-    virtual void GoToBestTarget(float deltaTime) {};
+    virtual void GeneratePlayerAnchorPoints() {};
     virtual void ShowNavigationPath() {};
 };

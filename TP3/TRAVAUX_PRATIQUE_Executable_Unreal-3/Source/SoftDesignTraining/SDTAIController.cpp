@@ -34,8 +34,14 @@ void ASDTAIController::BeginPlay()
 	loadBalancer->increaseCount();
 }
 
-void ASDTAIController::GoToBestTarget(float deltaTime)
+void ASDTAIController::GeneratePlayerAnchorPoints()
 {
+	if (m_IsPlayerDetected && !(SDTUtils::IsPlayerPoweredUp(GetWorld())))
+	{
+		AiAgentGroupManager* aiAgentGroupManager = AiAgentGroupManager::GetInstance();
+		aiAgentGroupManager->DrawSphereOverHead();
+		aiAgentGroupManager->GenerateAnchorPoints();
+	}
 }
 
 void ASDTAIController::MoveToRandomCollectible()
@@ -426,5 +432,4 @@ void ASDTAIController::SelectRandomCollectible()
 
 	// Draw time taken for 5 seconds
 	DrawDebugString(GetWorld(), FVector(0.f, 0.f, 6.f), "collectible: " + FString::SanitizeFloat(timeTaken) + "s", GetPawn(), FColor::Green, .5f, false);
-
 }

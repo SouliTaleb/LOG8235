@@ -48,7 +48,7 @@ void AiAgentGroupManager::DrawSphereOverHead()
 		if (aicontroller) 
 		{
 			FVector actorLocation = aicontroller->GetPawn()->GetActorLocation();
-			DrawDebugSphere(aicontroller->GetWorld(), actorLocation + FVector(0.f, 0.f, 100.f), 15.0f, 32, FColor::Purple);
+			DrawDebugSphere(aicontroller->GetWorld(), actorLocation + FVector(0.f, 0.f, 100.f), 25.0f, 32, FColor::Purple);
 		}
 		else 
 		{
